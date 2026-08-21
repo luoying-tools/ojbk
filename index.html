@@ -449,6 +449,11 @@ tr.highlight td { background: var(--purple-dim); }
 
   <!-- Activity Timeline -->
   <div class="card" style="margin-bottom:16px;padding:16px 20px;">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap;">
+      <label style="font-size:13px;color:var(--text-muted);font-weight:700;white-space:nowrap;">开服日期</label>
+      <input type="date" id="serverStartDate" value="2026-05-20" style="padding:6px 10px;border:1px solid var(--border);border-radius:8px;background:var(--bg-card);color:var(--text);font-size:13px;">
+      <span style="font-size:11px;color:var(--text-muted);">填写您的开服日期以精确推算活动周期</span>
+    </div>
     <div id="activity-timeline"></div>
   </div>
 
@@ -878,15 +883,23 @@ function formatDate(d) {
   return `${y}-${m}-${dd}`;
 }
 
+function getServerStartDate() {
+  if (typeof state !== 'undefined' && state.serverStartDate) {
+    const p = state.serverStartDate.split('-');
+    return new Date(parseInt(p[0]), parseInt(p[1]) - 1, parseInt(p[2]));
+  }
+  return new Date(2026, 4, 20);
+}
+
 function getNextActivityDate(act, fromDate) {
   // Cycle-day-based calculation matching Excel
   // 3-week cycle: shanhai(days 0-6), pomu(days 7-13), jsh(days 14-20)
   // Cycle starts from first shanhai date = server_start + 7 days (day 7)
   const cfg = DATA[act];
   const weekSlot = cfg.weekSlot; // 0=shanhai, 1=pomu, 2=jsh
-  const serverStart = new Date(2026, 4, 20); // May 20, 2026
+  const serverStart = getServerStartDate();
   const firstShanhai = new Date(serverStart);
-  firstShanhai.setDate(serverStart.getDate() + 7); // May 27, 2026 - day 7
+  firstShanhai.setDate(serverStart.getDate() + 7); // day 7
 
   const dayDiff = Math.floor((fromDate - firstShanhai) / (24 * 3600 * 1000));
   const cd = ((dayDiff % 21) + 21) % 21; // always positive modulo
@@ -911,7 +924,7 @@ function getNextActivityDate(act, fromDate) {
 }
 
 function getActivityCycleInfo() {
-  const serverStart = new Date(2026, 4, 20);
+  const serverStart = getServerStartDate();
   const firstShanhai = new Date(serverStart);
   firstShanhai.setDate(serverStart.getDate() + 7); // day 7
   const today = new Date();
@@ -1006,6 +1019,7 @@ function renderActivityTimeline() {
 // ═══════════════════════════════════════════════
 let currentAct = 'shanhai';
 let state = {
+  serverStartDate: localStorage.getItem('serverStartDate') || '2026-05-20',
   stock: { pomu: 140, jsh: 110, shanhai: 0 },
   exchStock: { pomu: 0, jsh: 0, shanhai: 0 },
   targetMode: { pomu: 'round', jsh: 'round', shanhai: 'round' }, // 'round' or 'count'
@@ -1854,6 +1868,19 @@ document.querySelectorAll('.tab').forEach(tab => {
     render();
   });
 });
+
+// Server start date input
+const sdtEl = document.getElementById('serverStartDate');
+if (sdtEl) {
+  sdtEl.value = state.serverStartDate;
+  sdtEl.addEventListener('change', e => {
+    state.serverStartDate = e.target.value || '2026-05-20';
+    localStorage.setItem('serverStartDate', state.serverStartDate);
+    const tl = document.getElementById('activity-timeline');
+    if (tl) tl.innerHTML = renderActivityTimeline();
+    render();
+  });
+}
 
 // Initial render
 render();
