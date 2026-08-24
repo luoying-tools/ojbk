@@ -179,6 +179,43 @@ body {
   border-color: var(--accent);
 }
 
+/* Mode Toggle */
+.mode-toggle {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.mode-btn {
+  flex: 1;
+  padding: 10px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text-dim);
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+  transition: all .2s;
+  text-align: center;
+}
+.mode-btn:hover { border-color: var(--accent-dim); background: var(--card-hover); }
+.mode-btn.active {
+  background: var(--accent-dim);
+  color: var(--accent);
+  border-color: var(--accent);
+}
+.mode-section { display: none; }
+.mode-section.active { display: flex; }
+.manual-hint {
+  font-size: 11px;
+  color: var(--orange);
+  margin-top: 8px;
+  padding: 8px 12px;
+  background: var(--orange-dim, rgba(230,126,34,.08));
+  border-radius: 8px;
+  border: 1px solid rgba(230,126,34,.2);
+}
+
 /* KPI */
 .kpi {
   background: var(--bg);
@@ -586,7 +623,9 @@ tr.highlight td { background: var(--purple-dim); }
         <div class="guide-step">
           <div class="guide-step-num">1</div>
           <div class="guide-step-text">
-            <strong>填写开服日期</strong> — 在上方"开服日期"选择您的服务器开服日期，系统会自动推算当前处于哪个活动周期
+            <strong>选择推算模式</strong> — 系统提供两种模式推算活动周期：<br>
+            <span style="color:var(--accent);">📅 <strong>开服日推算</strong>（默认）</span>：填写开服日期，系统按标准3周轮换自动推算。适用于<strong>5月20日左右开服</strong>、活动周期正常的区服<br>
+            <span style="color:var(--orange);">🎯 <strong>手动锚定</strong></span>：如果您的区服开服较晚、砍了某轮活动、或活动对不上，切换到此模式。选一个你<strong>确定正在进行的</strong>活动，填它的开始日期，系统以此为锚点反推整个周期
           </div>
         </div>
         <div class="guide-step">
@@ -632,11 +671,36 @@ tr.highlight td { background: var(--purple-dim); }
 
   <!-- Activity Timeline -->
   <div class="card" style="margin-bottom:16px;padding:16px 20px;">
-    <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap;">
+    <!-- Mode Toggle -->
+    <div class="mode-toggle">
+      <button class="mode-btn" id="modeAuto" onclick="setCycleMode('auto')">📅 开服日推算（标准区服）</button>
+      <button class="mode-btn" id="modeManual" onclick="setCycleMode('manual')">🎯 手动锚定（非标准区服）</button>
+    </div>
+
+    <!-- Auto Mode: Server Start Date -->
+    <div class="mode-section" id="autoSection" style="align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap;">
       <label style="font-size:13px;color:var(--text-muted);font-weight:700;white-space:nowrap;">开服日期</label>
       <input type="date" id="serverStartDate" value="2026-05-20" style="padding:6px 10px;border:1px solid var(--border);border-radius:8px;background:var(--bg-card);color:var(--text);font-size:13px;">
       <span style="font-size:11px;color:var(--text-muted);">填写您的开服日期以精确推算活动周期</span>
     </div>
+
+    <!-- Manual Mode: Activity Anchor -->
+    <div class="mode-section" id="manualSection" style="flex-direction:column;gap:10px;margin-bottom:12px;">
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+        <label style="font-size:13px;color:var(--text-muted);font-weight:700;white-space:nowrap;">当前活动</label>
+        <select id="manualActSelect" style="padding:6px 10px;border:1px solid var(--border);border-radius:8px;background:var(--bg-card);color:var(--text);font-size:13px;">
+          <option value="shanhai">山海灵宝</option>
+          <option value="pomu">破木悟法</option>
+          <option value="jsh">鉴石大会</option>
+        </select>
+        <label style="font-size:13px;color:var(--text-muted);font-weight:700;white-space:nowrap;">活动开始日期</label>
+        <input type="date" id="manualActStartDate" style="padding:6px 10px;border:1px solid var(--border);border-radius:8px;background:var(--bg-card);color:var(--text);font-size:13px;">
+      </div>
+      <div class="manual-hint">
+        💡 适用于<strong>开服较晚或活动周期不标准</strong>的区服：选一个你现在确定正在进行的活动，填它的开始日期，系统以这个为锚点反推整个周期。跳过活动、砍轮等情况均可应对。
+      </div>
+    </div>
+
     <div id="activity-timeline"></div>
   </div>
 
@@ -646,7 +710,7 @@ tr.highlight td { background: var(--purple-dim); }
   <!-- Footer -->
   <div class="footer">
     三周活动囤货计算器 | 数据基于游戏内实际数值 | 计算结果仅供参考<br>
-    开服日期本地保存，切换活动标签查看不同活动规划 | 有问题请反馈
+    支持开服日推算和手动锚定两种模式 | 设置本地保存，切换活动标签查看不同活动规划 | 有问题请反馈
   </div>
 </div>
 
@@ -1075,23 +1139,41 @@ function formatDate(d) {
 function getServerStartDate() {
   if (typeof state !== 'undefined' && state.serverStartDate) {
     const p = state.serverStartDate.split('-');
-    return new Date(parseInt(p[0]), parseInt(p[1]) - 1, parseInt(p[2]));
+    return new Date(parseInt(p[0], 10), parseInt(p[1], 10) - 1, parseInt(p[2], 10));
   }
   return new Date(2026, 4, 20);
 }
 
-function getNextActivityDate(act, fromDate) {
-  // Cycle-day-based calculation matching Excel
-  // 3-week cycle: shanhai(days 0-6), pomu(days 7-13), jsh(days 14-20)
-  // Cycle starts from first shanhai date = server_start + 7 days (day 7)
-  const cfg = DATA[act];
-  const weekSlot = cfg.weekSlot; // 0=shanhai, 1=pomu, 2=jsh
+function getCycleRefDate() {
+  if (typeof state !== 'undefined' && state.mode === 'manual' && state.manualAct && state.manualActStartDate) {
+    const act = state.manualAct;
+    const weekSlot = DATA[act].weekSlot;
+    const p = state.manualActStartDate.split('-');
+    const actStartDate = new Date(parseInt(p[0], 10), parseInt(p[1], 10) - 1, parseInt(p[2], 10));
+    const refDate = new Date(actStartDate);
+    refDate.setDate(actStartDate.getDate() - weekSlot * 7);
+    return refDate;
+  }
   const serverStart = getServerStartDate();
   const firstShanhai = new Date(serverStart);
-  firstShanhai.setDate(serverStart.getDate() + 7); // day 7
+  firstShanhai.setDate(serverStart.getDate() + 7);
+  return firstShanhai;
+}
 
-  const dayDiff = Math.floor((fromDate - firstShanhai) / (24 * 3600 * 1000));
-  const cd = ((dayDiff % 21) + 21) % 21; // always positive modulo
+// DST-safe day difference: uses UTC to avoid daylight saving offset errors
+function daysDiff(startDate, endDate) {
+  const u1 = Date.UTC(startDate.getFullYear(), startDate.getMonth(), startDate.getDate());
+  const u2 = Date.UTC(endDate.getFullYear(), endDate.getMonth(), endDate.getDate());
+  return Math.floor((u2 - u1) / (24 * 3600 * 1000));
+}
+
+function getNextActivityDate(act, fromDate) {
+  const cfg = DATA[act];
+  const weekSlot = cfg.weekSlot;
+  const refDate = getCycleRefDate();
+
+  const dayDiff = daysDiff(refDate, fromDate);
+  const cd = ((dayDiff % 21) + 21) % 21;
 
   const s7 = weekSlot * 7;       // 0 for shanhai, 7 for pomu, 14 for jsh
   const s76 = weekSlot * 7 + 6;  // 6 for shanhai, 13 for pomu, 20 for jsh
@@ -1113,16 +1195,15 @@ function getNextActivityDate(act, fromDate) {
 }
 
 function getActivityCycleInfo() {
-  const serverStart = getServerStartDate();
-  const firstShanhai = new Date(serverStart);
-  firstShanhai.setDate(serverStart.getDate() + 7); // day 7
+  const refDate = getCycleRefDate();
   const today = new Date();
   today.setHours(0, 0, 0, 0);
-  const dayDiff = Math.floor((today - firstShanhai) / (24 * 3600 * 1000));
+  const dayDiff = daysDiff(refDate, today);
   const cd = ((dayDiff % 21) + 21) % 21;
   const cycleNum = Math.floor(dayDiff / 21) + 1;
-  const cycleStart = new Date(firstShanhai);
-  cycleStart.setDate(firstShanhai.getDate() + (cycleNum - 1) * 21);
+  const cycleStart = new Date(refDate);
+  cycleStart.setDate(refDate.getDate() + (cycleNum - 1) * 21);
+  const firstShanhai = refDate;
 
   const acts = [
     { key: 'shanhai', name: '山海灵宝', startDay: 0, endDay: 6, color: '#2ecc71' },
@@ -1146,12 +1227,12 @@ function getActivityCycleInfo() {
     a.isActive = a === current;
   }
 
-  return { cd, cycleNum, cycleStart, acts, current, today };
+  return { cd, cycleNum, cycleStart, acts, current, today, firstShanhai };
 }
 
 function renderActivityTimeline() {
   const info = getActivityCycleInfo();
-  const { cd, cycleNum, cycleStart, acts, current, today } = info;
+  const { cd, cycleNum, cycleStart, acts, current, today, firstShanhai } = info;
 
   const cycleEnd = new Date(cycleStart);
   cycleEnd.setDate(cycleStart.getDate() + 20);
@@ -1204,6 +1285,24 @@ function renderActivityTimeline() {
         <span class="tl-info-label">第${cycleNum}轮周期</span>
         <span class="tl-info-value" style="font-size:11px;">${formatDate(cycleStart)}~${formatDate(cycleEnd)}</span>
       </div>
+      ${state.mode === 'manual'
+        ? `<div class="tl-info-item">
+            <span class="tl-info-label">锚定活动</span>
+            <span class="tl-info-value" style="font-size:11px;color:var(--accent);">${DATA[state.manualAct].name}</span>
+          </div>
+          <div class="tl-info-item">
+            <span class="tl-info-label">锚定日期</span>
+            <span class="tl-info-value" style="font-size:11px;">${state.manualActStartDate} <span style="font-size:10px;color:var(--text-muted);">(手动)</span></span>
+          </div>`
+        : `<div class="tl-info-item">
+            <span class="tl-info-label">开服日</span>
+            <span class="tl-info-value" style="font-size:11px;">${formatDate(getServerStartDate())}</span>
+          </div>
+          <div class="tl-info-item">
+            <span class="tl-info-label">首期山海</span>
+            <span class="tl-info-value" style="font-size:11px;">${formatDate(firstShanhai)} <span style="font-size:10px;color:var(--text-muted);">(开服+7天)</span></span>
+          </div>`
+      }
     </div>
   `;
 }
@@ -1214,6 +1313,9 @@ function renderActivityTimeline() {
 let currentAct = 'shanhai';
 let state = {
   serverStartDate: localStorage.getItem('serverStartDate') || '2026-05-20',
+  mode: localStorage.getItem('cycleMode') || 'auto',
+  manualAct: localStorage.getItem('manualAct') || 'pomu',
+  manualActStartDate: localStorage.getItem('manualActStartDate') || '',
   stock: { pomu: 140, jsh: 110, shanhai: 0 },
   exchStock: { pomu: 0, jsh: 0, shanhai: 0 },
   assocCollected: { pomu: false, jsh: false, shanhai: false }, // legacy, unused
@@ -2089,6 +2191,60 @@ if (sdtEl) {
     render();
   });
 }
+
+// Cycle mode switching
+function setCycleMode(mode) {
+  state.mode = mode;
+  localStorage.setItem('cycleMode', mode);
+  updateModeUI();
+  const tl = document.getElementById('activity-timeline');
+  if (tl) tl.innerHTML = renderActivityTimeline();
+  render();
+}
+
+function updateModeUI() {
+  const isAuto = state.mode === 'auto';
+  const autoBtn = document.getElementById('modeAuto');
+  const manBtn = document.getElementById('modeManual');
+  const autoSec = document.getElementById('autoSection');
+  const manSec = document.getElementById('manualSection');
+  if (autoBtn) autoBtn.classList.toggle('active', isAuto);
+  if (manBtn) manBtn.classList.toggle('active', !isAuto);
+  if (autoSec) autoSec.classList.toggle('active', isAuto);
+  if (manSec) manSec.classList.toggle('active', !isAuto);
+  // Sync manual inputs
+  const actSel = document.getElementById('manualActSelect');
+  if (actSel) actSel.value = state.manualAct;
+  const dateEl = document.getElementById('manualActStartDate');
+  if (dateEl) dateEl.value = state.manualActStartDate;
+}
+
+// Manual mode inputs
+const actSelEl = document.getElementById('manualActSelect');
+if (actSelEl) {
+  actSelEl.value = state.manualAct;
+  actSelEl.addEventListener('change', e => {
+    state.manualAct = e.target.value;
+    localStorage.setItem('manualAct', state.manualAct);
+    const tl = document.getElementById('activity-timeline');
+    if (tl) tl.innerHTML = renderActivityTimeline();
+    render();
+  });
+}
+const manDateEl = document.getElementById('manualActStartDate');
+if (manDateEl) {
+  manDateEl.value = state.manualActStartDate;
+  manDateEl.addEventListener('change', e => {
+    state.manualActStartDate = e.target.value;
+    localStorage.setItem('manualActStartDate', state.manualActStartDate);
+    const tl = document.getElementById('activity-timeline');
+    if (tl) tl.innerHTML = renderActivityTimeline();
+    render();
+  });
+}
+
+// Initialize mode UI
+updateModeUI();
 
 // Initial render
 render();
