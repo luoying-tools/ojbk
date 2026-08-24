@@ -216,6 +216,51 @@ body {
   border: 1px solid rgba(230,126,34,.2);
 }
 
+/* Anchor Activity Selector */
+.anchor-act-row {
+  display: flex;
+  gap: 8px;
+}
+.anchor-act-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text-dim);
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  transition: all .2s;
+}
+.anchor-act-btn:hover { border-color: var(--accent-dim); background: var(--card-hover); }
+.anchor-act-btn.active {
+  border-color: var(--accent);
+  background: var(--accent-dim);
+  color: var(--accent);
+}
+.anchor-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+  flex-shrink: 0;
+}
+.anchor-date-input {
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg-card);
+  color: var(--text);
+  font-size: 14px;
+  width: 200px;
+}
+.anchor-date-input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(78,154,241,.1); }
+
 /* KPI */
 .kpi {
   background: var(--bg);
@@ -685,16 +730,24 @@ tr.highlight td { background: var(--purple-dim); }
     </div>
 
     <!-- Manual Mode: Activity Anchor -->
-    <div class="mode-section" id="manualSection" style="flex-direction:column;gap:10px;margin-bottom:12px;">
-      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
-        <label style="font-size:13px;color:var(--text-muted);font-weight:700;white-space:nowrap;">当前活动</label>
-        <select id="manualActSelect" style="padding:6px 10px;border:1px solid var(--border);border-radius:8px;background:var(--bg-card);color:var(--text);font-size:13px;">
-          <option value="shanhai">山海灵宝</option>
-          <option value="pomu">破木悟法</option>
-          <option value="jsh">鉴石大会</option>
-        </select>
-        <label style="font-size:13px;color:var(--text-muted);font-weight:700;white-space:nowrap;">活动开始日期</label>
-        <input type="date" id="manualActStartDate" style="padding:6px 10px;border:1px solid var(--border);border-radius:8px;background:var(--bg-card);color:var(--text);font-size:13px;">
+    <div class="mode-section" id="manualSection" style="flex-direction:column;gap:12px;margin-bottom:12px;">
+      <div>
+        <label style="font-size:13px;color:var(--text-muted);font-weight:700;display:block;margin-bottom:8px;">当前活动（选一个你确定正在进行的）</label>
+        <div class="anchor-act-row">
+          <button class="anchor-act-btn" data-act="shanhai" onclick="setManualAct('shanhai')">
+            <span class="anchor-dot" style="background:#2ecc71;"></span>山海灵宝
+          </button>
+          <button class="anchor-act-btn" data-act="pomu" onclick="setManualAct('pomu')">
+            <span class="anchor-dot" style="background:#e67e22;"></span>破木悟法
+          </button>
+          <button class="anchor-act-btn" data-act="jsh" onclick="setManualAct('jsh')">
+            <span class="anchor-dot" style="background:#9b59b6;"></span>鉴石大会
+          </button>
+        </div>
+      </div>
+      <div>
+        <label style="font-size:13px;color:var(--text-muted);font-weight:700;display:block;margin-bottom:8px;">活动开始日期</label>
+        <input type="date" id="manualActStartDate" class="anchor-date-input">
       </div>
       <div class="manual-hint">
         💡 适用于<strong>开服较晚或活动周期不标准</strong>的区服：选一个你现在确定正在进行的活动，填它的开始日期，系统以这个为锚点反推整个周期。跳过活动、砍轮等情况均可应对。
@@ -2212,25 +2265,27 @@ function updateModeUI() {
   if (manBtn) manBtn.classList.toggle('active', !isAuto);
   if (autoSec) autoSec.classList.toggle('active', isAuto);
   if (manSec) manSec.classList.toggle('active', !isAuto);
-  // Sync manual inputs
-  const actSel = document.getElementById('manualActSelect');
-  if (actSel) actSel.value = state.manualAct;
+  // Sync anchor act buttons
+  document.querySelectorAll('.anchor-act-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.act === state.manualAct);
+  });
+  // Sync date input
   const dateEl = document.getElementById('manualActStartDate');
   if (dateEl) dateEl.value = state.manualActStartDate;
 }
 
-// Manual mode inputs
-const actSelEl = document.getElementById('manualActSelect');
-if (actSelEl) {
-  actSelEl.value = state.manualAct;
-  actSelEl.addEventListener('change', e => {
-    state.manualAct = e.target.value;
-    localStorage.setItem('manualAct', state.manualAct);
-    const tl = document.getElementById('activity-timeline');
-    if (tl) tl.innerHTML = renderActivityTimeline();
-    render();
+function setManualAct(act) {
+  state.manualAct = act;
+  localStorage.setItem('manualAct', act);
+  document.querySelectorAll('.anchor-act-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.act === act);
   });
+  const tl = document.getElementById('activity-timeline');
+  if (tl) tl.innerHTML = renderActivityTimeline();
+  render();
 }
+
+// Manual date input
 const manDateEl = document.getElementById('manualActStartDate');
 if (manDateEl) {
   manDateEl.value = state.manualActStartDate;
