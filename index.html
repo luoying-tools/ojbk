@@ -1983,7 +1983,16 @@ function setTreasureQty(key, val) {
 function updateTreasureSection() {
   const te = document.getElementById('treasure-exchange');
   if (te) {
+    // Save scroll position before re-render
+    const scrollEl = te.querySelector('.table-wrap');
+    const savedScroll = scrollEl ? scrollEl.scrollTop : 0;
+
     te.innerHTML = renderTreasureTable(currentAct);
+
+    // Restore scroll position after re-render
+    const newScrollEl = te.querySelector('.table-wrap');
+    if (newScrollEl) newScrollEl.scrollTop = savedScroll;
+
     te.querySelectorAll('input[type="number"]').forEach(el => {
       el.addEventListener('keydown', e => {
         if (e.key === 'Enter') e.target.blur();
