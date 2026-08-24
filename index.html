@@ -383,18 +383,145 @@ tr.highlight td { background: var(--purple-dim); }
 [data-activity="jsh"] { --act-color: #9b59b6; --act-dim: rgba(155,89,182,.15); }
 [data-activity="shanhai"] { --act-color: #2ecc71; --act-dim: rgba(46,204,113,.15); }
 
+/* Guide Section */
+.guide-card {
+  background: var(--card);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  margin-bottom: 16px;
+  overflow: hidden;
+}
+.guide-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px;
+  cursor: pointer;
+  user-select: none;
+  transition: background .2s;
+}
+.guide-header:hover { background: var(--card-hover); }
+.guide-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--accent);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.guide-title::before {
+  content: '';
+  width: 4px;
+  height: 16px;
+  background: linear-gradient(180deg, var(--accent), var(--purple));
+  border-radius: 2px;
+}
+.guide-toggle {
+  font-size: 18px;
+  color: var(--text-dim);
+  transition: transform .3s;
+}
+.guide-card.open .guide-toggle { transform: rotate(180deg); }
+.guide-body {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height .4s ease;
+}
+.guide-card.open .guide-body { max-height: 800px; }
+.guide-content {
+  padding: 16px 20px 20px;
+  border-top: 1px solid var(--border);
+}
+.guide-step {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 14px;
+  align-items: flex-start;
+}
+.guide-step-num {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent), var(--purple));
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.guide-step-text { font-size: 13px; color: var(--text-dim); line-height: 1.7; }
+.guide-step-text strong { color: var(--text); }
+.guide-tip {
+  font-size: 12px;
+  color: var(--text-muted);
+  padding: 10px 14px;
+  background: rgba(78,154,241,.05);
+  border-radius: 8px;
+  border-left: 3px solid var(--accent-dim);
+  margin-top: 4px;
+  line-height: 1.8;
+}
+
+/* Step Badge in card titles */
+.step-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--accent-dim);
+  color: var(--accent);
+  font-size: 12px;
+  font-weight: 800;
+  margin-right: 4px;
+}
+.card-hint {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-weight: 400;
+  margin-left: auto;
+}
+
+/* Tab active indicator */
+.tab .tab-dot {
+  display: none;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--green);
+  margin-left: 6px;
+  animation: pulse 1.5s infinite;
+}
+.tab.active-now .tab-dot { display: inline-block; }
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: .3; }
+}
+
+/* Footer */
+.footer {
+  text-align: center;
+  padding: 20px;
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
 /* Activity Timeline */
 .timeline-bar {
   display: flex;
   gap: 4px;
   margin-bottom: 12px;
-  height: 36px;
+  height: 48px;
   border-radius: 8px;
   overflow: hidden;
 }
 .tl-segment {
   flex: 1;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   font-size: 12px;
@@ -402,6 +529,7 @@ tr.highlight td { background: var(--purple-dim); }
   border-radius: 6px;
   position: relative;
   transition: all .3s;
+  padding: 2px;
 }
 .tl-segment.past { opacity: .4; }
 .tl-segment.active { transform: scale(1.03); box-shadow: 0 0 12px currentColor; }
@@ -441,9 +569,64 @@ tr.highlight td { background: var(--purple-dim); }
       <div class="subtitle">山海灵宝 / 破木悟法 / 鉴石大会 | 3周轮换周期 | 实时计算</div>
     </div>
     <div class="tabs">
-      <button class="tab active" data-act="shanhai">山海灵宝</button>
-      <button class="tab" data-act="pomu">破木悟法</button>
-      <button class="tab" data-act="jsh">鉴石大会</button>
+      <button class="tab active" data-act="shanhai">山海灵宝<span class="tab-dot"></span></button>
+      <button class="tab" data-act="pomu">破木悟法<span class="tab-dot"></span></button>
+      <button class="tab" data-act="jsh">鉴石大会<span class="tab-dot"></span></button>
+    </div>
+  </div>
+
+  <!-- User Guide -->
+  <div class="guide-card open" id="guideCard">
+    <div class="guide-header" onclick="document.getElementById('guideCard').classList.toggle('open')">
+      <div class="guide-title">使用指南（新手必看）</div>
+      <span class="guide-toggle">▼</span>
+    </div>
+    <div class="guide-body">
+      <div class="guide-content">
+        <div class="guide-step">
+          <div class="guide-step-num">1</div>
+          <div class="guide-step-text">
+            <strong>填写开服日期</strong> — 在上方"开服日期"选择您的服务器开服日期，系统会自动推算当前处于哪个活动周期
+          </div>
+        </div>
+        <div class="guide-step">
+          <div class="guide-step-num">2</div>
+          <div class="guide-step-text">
+            <strong>切换活动标签</strong> — 点击上方"山海灵宝 / 破木悟法 / 鉴石大会"切换不同活动的计算页面，绿色闪烁圆点表示当前正在进行的活动
+          </div>
+        </div>
+        <div class="guide-step">
+          <div class="guide-step-num">3</div>
+          <div class="guide-step-text">
+            <strong>① 填写当前资源</strong> — 填写<strong>活动开启前</strong>您拥有的消耗品库存数量<br>
+            <span style="color:var(--orange);">⚠ 系统会自动加上每日福利、绑购和协会商店，请勿把这些算进库存里！</span><br>
+            <span style="color:var(--text-muted);">如果活动中途填写，请用当前库存减去已领取的免费资源（每日福利×已过天数 + 绑购×已过天数×2）</span><br><br>
+            <span style="color:var(--accent);">📌 "本期协会可领次数"怎么填？举个例子：</span><br>
+            <span style="color:var(--text-muted);padding-left:16px;display:block;margin-top:4px;">假设活动8月19日~8月25日，协会商店每周一刷新：</span>
+            <span style="color:var(--green);padding-left:16px;display:block;margin-top:6px;">→ 8月19日~25日期间只有1个周一（8月24日），填 <strong>1</strong></span>
+            <span style="color:var(--orange);padding-left:16px;display:block;margin-top:6px;">→ 如果活动是8月18日~8月25日，期间有2个周一（8月18和8月25），填 <strong>2</strong></span>
+            <span style="color:var(--text-muted);padding-left:16px;display:block;margin-top:6px;">简单记：活动期间内有几个协会刷新日，就填几。一般情况填1即可。</span><br>
+            <strong>② 设定目标</strong> — 选择"按轮次"（1-7轮）或"按次数"设定您想完成的挑战目标
+          </div>
+        </div>
+        <div class="guide-step">
+          <div class="guide-step-num">4</div>
+          <div class="guide-step-text">
+            <strong>③ 综合分析</strong>（自动计算）— 系统自动算出当期最大可达次数、资源盈亏、需囤天数和预算<br>
+            <strong>④ 选择礼包</strong> — 勾选您打算购买的礼包，填入购买次数，结果实时更新
+          </div>
+        </div>
+        <div class="guide-step">
+          <div class="guide-step-num">5</div>
+          <div class="guide-step-text">
+            <strong>⑤ 挑战轮次参考表</strong> — 输入您拥有的兑换货币数量，系统反推对应挑战次数和净消耗。表格显示所有挑战节点数据：📍标记当前资源可达位置，✓/✗标记反推可达状态<br>
+            <strong>⑥ 宝库兑换规划</strong> — 交互式规划宝库兑换方案，填入兑换次数实时查看资源状况
+          </div>
+        </div>
+        <div class="guide-tip">
+          💡 <strong>小贴士：</strong>所有输入框支持实时计算，修改任意数值后结果自动更新。开服日期会被记住，下次打开无需重复填写。
+        </div>
+      </div>
     </div>
   </div>
 
@@ -459,6 +642,12 @@ tr.highlight td { background: var(--purple-dim); }
 
   <!-- Main Content -->
   <div id="content" data-activity="pomu"></div>
+
+  <!-- Footer -->
+  <div class="footer">
+    三周活动囤货计算器 | 数据基于游戏内实际数值 | 计算结果仅供参考<br>
+    开服日期本地保存，切换活动标签查看不同活动规划 | 有问题请反馈
+  </div>
 </div>
 
 <script>
@@ -541,7 +730,7 @@ const DATA = {
   shanhai: {
     name: '山海灵宝', consumable: '灵宝券', exchange: '山海币',
     costPerChallenge: 1, cycleDays: 21, weekSlot: 0,
-    assoc: 0, assocName: '协会商店(每周)',
+    assoc: 5, assocName: '协会商店(每周)',
     packs: [
       {name:'每日灵宝令',price:0,cons:1,exch:2,jade:0,type:'免费',limit:7},
       {name:'福利灵宝令',price:0,cons:3,exch:2,jade:0,type:'绑购',limit:14},
@@ -964,11 +1153,15 @@ function renderActivityTimeline() {
   const info = getActivityCycleInfo();
   const { cd, cycleNum, cycleStart, acts, current, today } = info;
 
+  const cycleEnd = new Date(cycleStart);
+  cycleEnd.setDate(cycleStart.getDate() + 20);
+
   const segs = acts.map(a => {
     const cls = a.isActive ? 'active' : (a.isPast ? 'past' : '');
     const dayText = a.isActive ? `第${a.dayInAct}/7天` : (a.isPast ? '已结束' : '未开始');
+    const dateText = `${formatDate(a.startDate).slice(5)}~${formatDate(a.endDate).slice(5)}`;
     return `<div class="tl-segment ${cls}" style="background:${a.color}22;color:${a.color};border:1px solid ${a.color}44;">
-      ${a.name}<span class="tl-day">${dayText}</span>
+      ${a.name}<span class="tl-day">${dayText}</span><span class="tl-day" style="display:block;font-size:9px;opacity:.6;">${dateText}</span>
     </div>`;
   }).join('');
 
@@ -1009,6 +1202,7 @@ function renderActivityTimeline() {
       </div>
       <div class="tl-info-item">
         <span class="tl-info-label">第${cycleNum}轮周期</span>
+        <span class="tl-info-value" style="font-size:11px;">${formatDate(cycleStart)}~${formatDate(cycleEnd)}</span>
       </div>
     </div>
   `;
@@ -1022,6 +1216,8 @@ let state = {
   serverStartDate: localStorage.getItem('serverStartDate') || '2026-05-20',
   stock: { pomu: 140, jsh: 110, shanhai: 0 },
   exchStock: { pomu: 0, jsh: 0, shanhai: 0 },
+  assocCollected: { pomu: false, jsh: false, shanhai: false }, // legacy, unused
+  assocCount: { pomu: 1, jsh: 1, shanhai: 1 },
   targetMode: { pomu: 'round', jsh: 'round', shanhai: 'round' }, // 'round' or 'count'
   targetRound: { pomu: 3, jsh: 7, shanhai: 7 },
   targetCount: { pomu: 0, jsh: 0, shanhai: 0 },
@@ -1047,7 +1243,7 @@ function computeMaxCount(act) {
     else if (p.type === '绑购') { freeCons += p.cons * p.limit; boundExch += p.exch * p.limit; }
     else { packCons += p.cons * qty; packExch += p.exch * qty; }
   });
-  freeCons += cfg.assoc;
+  freeCons += cfg.assoc * (state.assocCount[act] || 0);
   const totalCons = state.stock[act] + freeCons + packCons;
   const totalExch = state.exchStock[act] + freeExch + boundExch + packExch;
   return getMaxCountWithReturns(act, totalCons, totalExch).count;
@@ -1065,20 +1261,23 @@ function render() {
     <div class="grid">
       <!-- Current Resources -->
       <div class="card">
-        <div class="card-title">当前资源</div>
+        <div class="card-title"><span class="step-badge">1</span>当前资源<span class="card-hint">填活动开启前的库存，系统自动加免费资源</span></div>
         <div class="input-group">
-          <label>${c}库存</label>
+          <label>${c}库存 <span style="font-size:11px;color:var(--orange);">（活动开启前的数量，不含每日福利/绑购/协会）</span></label>
           <input type="number" id="stock" value="${state.stock[act]}" min="0" max="99999">
         </div>
-        <div class="input-group">
-          <label>${e}库存</label>
-          <input type="number" id="exchStock" value="${state.exchStock[act]}" min="0" max="99999">
+        <div class="input-group" style="display:flex;align-items:center;gap:10px;margin-top:10px;">
+          <label for="assocCount" style="margin:0;font-size:12px;color:var(--text-dim);line-height:1.5;flex:1;">
+            本期协会可领次数<br>
+            <span style="font-size:11px;color:var(--text-muted);">活动期间内协会刷新几次就填几（一般填1，跨周可能填2）</span>
+          </label>
+          <input type="number" id="assocCount" value="${state.assocCount[act]}" min="0" max="2" style="width:60px;">
         </div>
       </div>
 
       <!-- Target Setting -->
       <div class="card">
-        <div class="card-title">目标设定</div>
+        <div class="card-title"><span class="step-badge">2</span>目标设定<span class="card-hint">设定您想完成的挑战目标</span></div>
         <div class="toggle-group">
           <button class="toggle-btn ${state.targetMode[act]==='round'?'active':''}" onclick="setMode('round')">按轮次</button>
           <button class="toggle-btn ${state.targetMode[act]==='count'?'active':''}" onclick="setMode('count')">按次数</button>
@@ -1099,31 +1298,25 @@ function render() {
 
     <!-- Row 2: Merged Analysis (Current Period + Target) -->
     <div class="card" style="margin-bottom:16px;">
-      <div class="card-title">综合分析（当期可达 + 目标规划）</div>
+      <div class="card-title"><span class="step-badge">3</span>综合分析（当期可达 + 目标规划）<span class="card-hint">自动计算，无需操作</span></div>
       <div id="merged-analysis">${renderMergedAnalysis(act)}</div>
     </div>
 
     <!-- Row 3: Pack Selection (full width) -->
     <div class="card" style="margin-bottom:16px;">
-      <div class="card-title">礼包选择（勾选并填购买次数）</div>
+      <div class="card-title"><span class="step-badge">4</span>礼包选择（勾选并填购买次数）<span class="card-hint">勾选=满限购买，可修改次数</span></div>
       ${renderPackList(act)}
     </div>
 
-    <!-- Row 4: Reverse Calculator -->
+    <!-- Row 4: Reverse Calculator + Round Reference (merged) -->
     <div class="card" style="margin-bottom:16px;">
-      <div class="card-title">${e}反推目标</div>
+      <div class="card-title"><span class="step-badge">5</span>挑战轮次参考表<span class="card-hint">输入${e}反推挑战次数 | 📍标记当前最大可达节点</span></div>
       <div id="reverse-calc">${renderReverseCalc(act)}</div>
     </div>
 
-    <!-- Row 5: Round Reference Table -->
+    <!-- Row 5: Treasure Exchange Planner (full width, interactive) -->
     <div class="card" style="margin-bottom:16px;">
-      <div class="card-title">挑战轮次参考表 <span style="font-size:12px;color:var(--text-dim);font-weight:400;">📍标记当前最大可达节点</span></div>
-      ${renderRoundTable(act, computeMaxCount(act))}
-    </div>
-
-    <!-- Row 6: Treasure Exchange Planner (full width, interactive) -->
-    <div class="card" style="margin-bottom:16px;">
-      <div class="card-title">宝库兑换规划（根据当前资源实时计算）</div>
+      <div class="card-title"><span class="step-badge">6</span>宝库兑换规划（根据当前资源实时计算）<span class="card-hint">填兑换次数，实时查看资源</span></div>
       <div id="treasure-exchange">${renderTreasureTable(act)}</div>
     </div>
   `;
@@ -1131,6 +1324,17 @@ function render() {
   document.getElementById('content').innerHTML = html;
   const tl = document.getElementById('activity-timeline');
   if (tl) tl.innerHTML = renderActivityTimeline();
+
+  // Highlight current active activity tab
+  try {
+    const info = getActivityCycleInfo();
+    if (info.current) {
+      document.querySelectorAll('.tab').forEach(t => {
+        t.classList.toggle('active-now', t.dataset.act === info.current.key);
+      });
+    }
+  } catch(e) {}
+
   attachListeners();
 }
 
@@ -1289,39 +1493,12 @@ function renderReverseResults(act) {
       </div>
     </div>
     ` : '<div class="note">输入数量不足，无法反推</div>'}
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th>目标</th>
-            <th>需${e}</th>
-            <th>挑战次数</th>
-            <th>所在轮次</th>
-            <th>需消耗${c}(净)</th>
-            <th>状态</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${targets.map(t => {
-            const isReached = inputExch >= t.exch;
-            return `
-              <tr ${isReached?'class="highlight"':''}>
-                <td><strong>${t.label}</strong></td>
-                <td><strong>${t.exch}</strong> ${e}</td>
-                <td>${t.count}次</td>
-                <td>第${t.round}/7轮</td>
-                <td>${t.netCons} ${c}</td>
-                <td>${isReached?'<span class="badge badge-ok">✓ 可达</span>':'<span class="badge badge-no">✗ 不足</span>'}</td>
-              </tr>
-            `;
-          }).join('')}
-        </tbody>
-      </table>
-    </div>
+    <div style="margin-top:8px;margin-bottom:6px;font-size:13px;color:var(--text-dim);">📍=当前资源可达 | ✓=反推可达 | ✗=反推不足</div>
+    ${renderRoundTable(act, computeMaxCount(act), inputExch)}
   `;
 }
 
-function renderRoundTable(act, maxCount = 0) {
+function renderRoundTable(act, maxCount = 0, reverseExch = null) {
   const cfg = DATA[act];
   const c = cfg.consumable;
   const e = cfg.exchange;
@@ -1366,6 +1543,16 @@ function renderRoundTable(act, maxCount = 0) {
     if (isMaxNode) classes.push('highlight');
     if (!isReached && maxCount > 0) classes.push('disabled-row');
 
+    // Reverse calc status
+    let reverseStatus = '';
+    if (reverseExch !== null) {
+      if (totalExch <= reverseExch) {
+        reverseStatus = '<span class="badge badge-ok">✓</span>';
+      } else {
+        reverseStatus = '<span class="badge badge-no">✗</span>';
+      }
+    }
+
     rows += `
       <tr ${classes.length ? `class="${classes.join(' ')}"` : ''}>
         <td>${nodeLabel} ${isMaxNode ? '<span class="badge badge-info" style="margin-left:4px;">📍 当前</span>' : ''}</td>
@@ -1373,9 +1560,8 @@ function renderRoundTable(act, maxCount = 0) {
         <td>${consumed}</td>
         <td style="color:var(--green)">+${cumConsRet}</td>
         <td style="color:var(--red)">${net}</td>
-        <td style="color:var(--green)">+${cumExchRet}</td>
-        <td style="color:var(--green)">${clearanceExch > 0 ? '+' + clearanceExch : '—'}</td>
         <td style="color:var(--purple);font-weight:700;">${totalExch}</td>
+        ${reverseExch !== null ? `<td style="text-align:center;">${reverseStatus}</td>` : ''}
       </tr>
     `;
   }
@@ -1391,9 +1577,8 @@ function renderRoundTable(act, maxCount = 0) {
             <th>消耗${c}</th>
             <th>累计返还</th>
             <th>净消耗${c}</th>
-            <th>任务${e}</th>
-            <th>通关${e}</th>
             <th>累计${e}</th>
+            ${reverseExch !== null ? `<th>反推</th>` : ''}
           </tr>
         </thead>
         <tbody>${rows}</tbody>
@@ -1464,61 +1649,67 @@ function renderTreasureTable(act) {
     const layerUnlocked = prevCum >= unlock;
     const layerProgress = unlock > 0 ? Math.min(100, (prevCum / unlock * 100)) : 100;
     const layerDeficit = layerUnlocked ? 0 : unlock - prevCum;
-    
+
+    // Layer header row
+    rows += `
+      <tr class="layer-header" style="background:var(--bg);">
+        <td colspan="5" style="padding:8px 10px;">
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+            <span class="tag tag-layer-${layer}">第${layer}层</span>
+            <span style="font-size:12px;color:var(--text-muted);">解锁: 累计消耗${unlock}${e}</span>
+            <span style="font-size:12px;color:var(--green);">返还: ${ret}${c}/次</span>
+            ${layerUnlocked
+              ? '<span style="font-size:12px;color:var(--green);">✓ 已解锁</span>'
+              : `<span style="font-size:12px;color:var(--red);">🔒 差${layerDeficit}${e}</span>
+                 <div class="value-bar" style="width:80px;"><div class="value-bar-fill" style="width:${layerProgress}%;background:var(--orange);"></div></div>
+                 <span style="font-size:10px;color:var(--text-muted);">${prevCum}/${unlock}</span>`}
+          </div>
+        </td>
+      </tr>
+    `;
+
     items.forEach((item, idx) => {
       const key = `${layer}-${idx}`;
       const qty = ts[key] || 0;
       const consumption = item[2] * qty;
       const retAmt = ret * qty;
       const remaining = avail.total - totalPlanned;
-      
+
       let statusHtml;
       if (qty > 0) {
         if (!layerUnlocked) {
-          statusHtml = `<span class="badge badge-no">🔒 差${layerDeficit}${e}</span>`;
+          statusHtml = `<span class="badge badge-no">🔒</span>`;
         } else if (remaining < 0) {
-          statusHtml = '<span class="badge badge-no">✗ 资源不足</span>';
+          statusHtml = '<span class="badge badge-no">✗</span>';
         } else {
-          statusHtml = '<span class="badge badge-ok">✓ 可兑换</span>';
+          statusHtml = '<span class="badge badge-ok">✓</span>';
         }
       } else {
         if (!layerUnlocked) {
-          statusHtml = `<span style="color:var(--text-muted);font-size:11px;">🔒 需先消耗${layerDeficit}${e}</span>`;
+          statusHtml = `<span style="color:var(--text-muted);font-size:11px;">🔒</span>`;
         } else if (remaining < item[2]) {
-          statusHtml = `<span style="color:var(--text-muted);font-size:11px;">资源不足</span>`;
+          statusHtml = `<span style="color:var(--text-muted);font-size:11px;">—</span>`;
         } else {
-          statusHtml = `<span style="color:var(--green);font-size:11px;">可兑换</span>`;
+          statusHtml = '';
         }
       }
-      
+
       const classes = [];
       if (qty > 0) classes.push('highlight');
-      
+
       rows += `
         <tr ${classes.length ? `class="${classes.join(' ')}"` : ''}>
-          ${idx === 0 ? `<td rowspan="${items.length}" style="vertical-align:top;padding-top:10px;">
-            <span class="tag tag-layer-${layer}">第${layer}层</span>
-            <div style="margin-top:6px;font-size:11px;color:var(--text-muted);">解锁:${unlock}${e}</div>
-            <div style="font-size:11px;color:var(--green);">返还:${ret}${c}/次</div>
-            ${layerUnlocked 
-              ? '<div style="font-size:11px;color:var(--green);margin-top:3px;">✓ 已解锁</div>' 
-              : `<div style="font-size:11px;color:var(--red);margin-top:3px;">✗ 差${layerDeficit}${e}</div>
-                 <div class="value-bar" style="margin-top:3px;width:80px;"><div class="value-bar-fill" style="width:${layerProgress}%;background:var(--orange);"></div></div>
-                 <div style="font-size:10px;color:var(--text-muted);margin-top:1px;">${prevCum}/${unlock}</div>`}
-          </td>` : ''}
-          <td>${item[1]}</td>
-          <td style="color:var(--orange);font-weight:700;">${item[2]}</td>
-          <td>${item[3]}</td>
-          <td>
-            <input type="number" class="treasure-qty-input" data-key="${key}" data-act="${act}" 
-                   value="${qty}" min="0" max="${item[3]}" 
+          <td>${item[1]} <span style="font-size:11px;color:var(--text-muted);">(${item[2]}${e}/限${item[3]})</span></td>
+          <td style="text-align:center;">
+            <input type="number" class="treasure-qty-input" data-key="${key}" data-act="${act}"
+                   value="${qty}" min="0" max="${item[3]}"
                    onclick="event.stopPropagation()"
                    onchange="setTreasureQty('${key}', this.value)"
-                   style="width:45px;background:var(--card);border:1px solid var(--border);border-radius:4px;padding:3px 6px;color:var(--text);font-size:12px;text-align:center;">
+                   style="width:70px;background:var(--card);border:1px solid var(--border);border-radius:6px;padding:6px 8px;color:var(--text);font-size:14px;text-align:center;font-weight:600;">
           </td>
-          <td style="color:${consumption>0?'var(--orange)':'var(--text-muted)'};">${consumption}</td>
-          <td style="color:var(--green);">${retAmt > 0 ? '+' + retAmt : ''}</td>
-          <td>${statusHtml}</td>
+          <td style="color:${consumption>0?'var(--orange)':'var(--text-muted)'};font-weight:${consumption>0?'700':'400'};">${consumption > 0 ? '-' + consumption : '—'}</td>
+          <td style="color:var(--green);">${retAmt > 0 ? '+' + retAmt : '—'}</td>
+          <td style="text-align:center;">${statusHtml}</td>
         </tr>
       `;
     });
@@ -1529,9 +1720,9 @@ function renderTreasureTable(act) {
   return `
     <div class="grid-4" style="margin-bottom:14px;">
       <div class="kpi blue">
-        <div class="kpi-label">库存+礼包${e}</div>
-        <div class="kpi-value" style="font-size:18px;">${avail.stock + avail.fromPacks}</div>
-        <div class="kpi-unit">库存${avail.stock}+礼包${avail.fromPacks}</div>
+        <div class="kpi-label">礼包${e}</div>
+        <div class="kpi-value" style="font-size:18px;">${avail.fromPacks}</div>
+        <div class="kpi-unit">礼包获得</div>
       </div>
       <div class="kpi green">
         <div class="kpi-label">目标完成获得</div>
@@ -1564,14 +1755,11 @@ function renderTreasureTable(act) {
       <table>
         <thead>
           <tr>
-            <th>层级</th>
-            <th>道具名称</th>
-            <th>单价(${e})</th>
-            <th>限购</th>
-            <th>兑换次数</th>
-            <th>消耗</th>
+            <th>道具 (单价/限购)</th>
+            <th style="text-align:center;">兑换次数</th>
+            <th>消耗${e}</th>
             <th>返还${c}</th>
-            <th>状态</th>
+            <th style="text-align:center;">状态</th>
           </tr>
         </thead>
         <tbody>${rows}</tbody>
@@ -1606,8 +1794,8 @@ function renderMergedAnalysis(act) {
     }
   });
   
-  freeCons += cfg.assoc;
-  
+  freeCons += cfg.assoc * (state.assocCount[act] || 0);
+
   const stockCons = state.stock[act];
   const stockExch = state.exchStock[act];
   const totalCons = stockCons + freeCons + boundCons + packCons;
@@ -1637,7 +1825,10 @@ function renderMergedAnalysis(act) {
   const targetTotalExch = stockExch + getPackExchTotal(act) + targetNet.totalExch;
   const targetTreasureReturns = calculateOptimalReturns(act, targetTotalExch);
   const targetNetAfterReturns = targetNet.net - targetTreasureReturns;
-  const deficit = Math.max(0, targetNetAfterReturns - totalCons);
+  // Use simulation-based deficit: gap between target and current max, minus remaining resources
+  const gapNet = targetNet.net - netInfo.net;
+  const rawDeficit = Math.max(0, gapNet - remaining);
+  const deficit = canReachTarget ? 0 : Math.max(1, rawDeficit);
   
   // Pack totals (3-week cycle for stockpile calc)
   const packTotals = getPackTotals(act, state.packSelections[act]);
@@ -1673,17 +1864,17 @@ function renderMergedAnalysis(act) {
       <div class="kpi ${deficit > 0 ? 'red' : 'green'}">
         <div class="kpi-label">${deficit > 0 ? '需囤' : '盈余'}${c}</div>
         <div class="kpi-value">${deficit > 0 ? deficit : Math.max(0, stockCons - targetNetAfterReturns)}</div>
-        <div class="kpi-unit">当期可用${totalCons} | 需${targetNetAfterReturns}${targetTreasureReturns > 0 ? `(扣返还)` : ''}</div>
+        <div class="kpi-unit">当期可用${totalCons} | 需${targetNetAfterReturns}${targetTreasureReturns > 0 ? `(扣返还)` : ''}${deficit > 0 ? ` | 差${deficit}` : ''}</div>
       </div>
       <div class="kpi orange">
         <div class="kpi-label">合计可用${e}</div>
         <div class="kpi-value">${totalExchEarned}</div>
-        <div class="kpi-unit">挑战${exchFromChallenges}+礼包${totalExch}+库存${stockExch}</div>
+        <div class="kpi-unit">挑战${exchFromChallenges}+礼包${totalExch}</div>
       </div>
       <div class="kpi purple">
         <div class="kpi-label">需囤天数</div>
-        <div class="kpi-value">${cyclesNeeded > 0 ? hoardDays : 0}天</div>
-        <div class="kpi-unit">${cyclesNeeded > 0 ? '预计完成' + formatDate(completeDate) : '已达标'}</div>
+        <div class="kpi-value">${canReachTarget ? 0 : Math.max(1, hoardDays)}天</div>
+        <div class="kpi-unit">${canReachTarget ? '已达标' : (hoardDays > 0 ? '预计完成' + formatDate(completeDate) : '差' + deficit + c + '，下期可达标')}</div>
       </div>
     </div>
     ${improved ? `
@@ -1712,8 +1903,9 @@ function renderMergedAnalysis(act) {
             </tr>
           </thead>
           <tbody>
-            <tr><td>当前库存</td><td><strong>${stockCons}</strong></td><td><strong>${stockExch}</strong></td></tr>
-            <tr><td>免费(含协会)</td><td>+${freeCons}</td><td>+${freeExch}</td></tr>
+            <tr><td>当前库存<span style="font-size:10px;color:var(--text-muted);"> (活动前)</span></td><td><strong>${stockCons}</strong></td><td style="color:var(--text-muted)">— (每期清零)</td></tr>
+              <tr><td>免费(含协会)<span style="font-size:10px;color:var(--text-muted);"> (自动)</span></td><td>+${freeCons}</td><td>+${freeExch}</td></tr>
+              <tr><td colspan="3" style="font-size:11px;color:var(--text-muted);">含协会×${state.assocCount[act] || 0}（${cfg.assoc * (state.assocCount[act] || 0)}${c}）</td></tr>
             <tr><td>绑购</td><td>+${boundCons}</td><td>+${boundExch}</td></tr>
             <tr><td>付费礼包</td><td>+${packCons}</td><td>+${packExch}</td></tr>
             <tr class="highlight"><td><strong>当期可用</strong></td><td><strong style="color:var(--accent)">${totalCons}</strong></td><td><strong style="color:var(--accent)">${totalExch}</strong></td></tr>
@@ -1737,13 +1929,13 @@ function renderMergedAnalysis(act) {
           <tbody>
             <tr><td>完成目标获得${e}</td><td style="color:var(--green)">+${targetNet.totalExch}</td></tr>
             <tr><td>本期礼包获得${e}</td><td style="color:var(--green)">+${getPackExchTotal(act)}</td></tr>
-            <tr><td>合计可用${e}</td><td><strong style="color:var(--green)">+${stockExch + getPackExchTotal(act) + targetNet.totalExch}</strong></td></tr>
+            <tr><td>合计可用${e}</td><td><strong style="color:var(--green)">+${getPackExchTotal(act) + targetNet.totalExch}</strong></td></tr>
             <tr><td>宝库兑换返还${c}<br><span style="font-size:11px;color:var(--text-muted);">用${targetTotalExch}${e}兑换</span></td><td style="color:var(--green)">+${targetTreasureReturns}</td></tr>
             <tr class="highlight"><td><strong>净消耗(扣宝库返还)</strong></td><td><strong style="color:var(--red)">${targetNetAfterReturns}</strong></td></tr>
             <tr><td>每期获得${c}/${e}<br><span style="font-size:11px;color:var(--text-muted);">花费${perCycleCost}元/期</span></td><td style="color:var(--green)">+${perCycleCons}/+${perCycleExch}</td></tr>
             <tr class="highlight"><td><strong>需囤周期数</strong></td><td><strong style="color:var(--orange)">${cyclesNeeded > 0 ? cyclesNeeded.toFixed(2) : '0'}</strong></td></tr>
             <tr class="highlight"><td><strong>总预算</strong></td><td><strong style="color:var(--orange)">${totalBudget}元</strong></td></tr>
-            <tr class="highlight"><td><strong>预计完成</strong></td><td><strong>${cyclesNeeded > 0 ? formatDate(completeDate) : '已达标'}<span style="font-size:11px;color:var(--text-muted);font-weight:400;"> (约${hoardDays}天后)</span></strong></td></tr>
+            <tr class="highlight"><td><strong>预计完成</strong></td><td><strong>${canReachTarget ? '已达标' : (hoardDays > 0 ? formatDate(completeDate) : '差' + deficit + c + '，下期可达标')}<span style="font-size:11px;color:var(--text-muted);font-weight:400;"> (约${canReachTarget ? 0 : Math.max(1, hoardDays)}天后)</span></strong></td></tr>
             <tr class="highlight"><td><strong>最近可参加</strong></td><td><strong>${cyclesNeeded > 0 ? formatDate(nextDate) : '—'}<span style="font-size:11px;color:var(--text-muted);font-weight:400;"> (约${waitDays}天后)</span></strong></td></tr>
           </tbody>
         </table>
@@ -1836,9 +2028,16 @@ function attachListeners() {
   }
   
   bindInput('stock', 'stock', v => parseInt(v) || 0, true);
-  bindInput('exchStock', 'exchStock', v => parseInt(v) || 0, true);
   bindInput('targetRound', 'targetRound', v => Math.max(1, Math.min(7, parseInt(v) || 1)), true);
   bindInput('targetCount', 'targetCount', v => Math.max(1, parseInt(v) || 1), true);
+  // Association store count input
+  const assocEl = document.getElementById('assocCount');
+  if (assocEl) {
+    assocEl.addEventListener('input', e => {
+      state.assocCount[act] = Math.max(0, Math.min(2, parseInt(e.target.value) || 0));
+      render();
+    });
+  }
   // Reverse calc: real-time update without losing input focus
   const revEl = document.getElementById('reverseExch');
   if (revEl) {
