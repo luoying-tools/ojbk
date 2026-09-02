@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="zh-CN"><head>
 <meta charset="UTF-8">
@@ -7,9 +6,10 @@
 <style>
 :root {
   --bg: #0f1117;
-  --card: #1a1d29;
-  --card-hover: #222639;
+  --card: #181b28;
+  --card-hover: #1f2335;
   --border: #2a2e42;
+  --border-light: #353a52;
   --accent: #4e9af1;
   --accent-dim: #2a5a9e;
   --green: #2ecc71;
@@ -29,6 +29,7 @@
 * { margin:0; padding:0; box-sizing:border-box; }
 body {
   background: var(--bg);
+  background-image: radial-gradient(ellipse at top, rgba(78,154,241,.04) 0%, transparent 50%);
   color: var(--text);
   font-family: 'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif;
   font-size: 14px;
@@ -39,16 +40,17 @@ body {
 
 /* Header */
 .header {
-  background: linear-gradient(135deg, #1a1d29 0%, #1e2240 100%);
+  background: linear-gradient(135deg, #181b28 0%, #1e2444 60%, #1a2040 100%);
   border-radius: var(--radius);
   padding: 24px 32px;
   margin-bottom: 20px;
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-light);
   display: flex;
   align-items: center;
   justify-content: space-between;
   flex-wrap: wrap;
   gap: 16px;
+  box-shadow: var(--shadow);
 }
 .header h1 {
   font-size: 24px;
@@ -83,6 +85,7 @@ body {
 .tab.active {
   background: linear-gradient(135deg, var(--accent), var(--purple));
   color: #fff;
+  box-shadow: 0 2px 8px rgba(78,154,241,.3);
 }
 
 /* Grid Layout */
@@ -107,9 +110,10 @@ body {
   border-radius: var(--radius);
   border: 1px solid var(--border);
   padding: 20px;
-  transition: border-color .2s;
+  transition: border-color .2s, box-shadow .2s;
+  box-shadow: 0 2px 8px rgba(0,0,0,.15);
 }
-.card:hover { border-color: var(--accent-dim); }
+.card:hover { border-color: var(--border-light); box-shadow: 0 4px 16px rgba(0,0,0,.2); }
 .card-title {
   font-size: 14px;
   font-weight: 700;
@@ -118,6 +122,8 @@ body {
   display: flex;
   align-items: center;
   gap: 8px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border);
 }
 .card-title::before {
   content: '';
@@ -139,18 +145,18 @@ body {
 .input-group input, .input-group select {
   width: 100%;
   background: var(--bg);
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-light);
   border-radius: 8px;
   padding: 10px 14px;
   color: var(--text);
   font-size: 15px;
   font-weight: 600;
-  transition: border-color .2s;
+  transition: border-color .2s, box-shadow .2s;
 }
 .input-group input:focus, .input-group select:focus {
   outline: none;
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(78,154,241,.1);
+  box-shadow: 0 0 0 3px rgba(78,154,241,.12);
 }
 .input-group input[type="number"] { -moz-appearance: textfield; }
 .input-group input::-webkit-outer-spin-button,
@@ -264,57 +270,67 @@ body {
 
 /* KPI */
 .kpi {
-  background: var(--bg);
+  background: var(--card);
   border-radius: 10px;
   padding: 14px;
   text-align: center;
   border: 1px solid var(--border);
+  border-left: 3px solid var(--text-muted);
   transition: all .2s;
+  position: relative;
 }
-.kpi:hover { border-color: var(--accent-dim); transform: translateY(-2px); }
+.kpi:hover { border-color: var(--border-light); transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,.2); }
 .kpi-label { font-size: 11px; color: var(--text-dim); margin-bottom: 6px; }
 .kpi-value { font-size: 22px; font-weight: 800; }
 .kpi-unit { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+.kpi.green { border-left-color: var(--green); }
 .kpi.green .kpi-value { color: var(--green); }
+.kpi.red { border-left-color: var(--red); }
 .kpi.red .kpi-value { color: var(--red); }
+.kpi.orange { border-left-color: var(--orange); }
 .kpi.orange .kpi-value { color: var(--orange); }
+.kpi.blue { border-left-color: var(--accent); }
 .kpi.blue .kpi-value { color: var(--accent); }
+.kpi.purple { border-left-color: var(--purple); }
 .kpi.purple .kpi-value { color: var(--purple); }
 
 /* Pack List */
-.pack-list { display: flex; flex-direction: column; gap: 8px; }
+.pack-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 8px; }
 .pack-item {
   display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 10px 14px;
-  background: var(--bg);
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px;
+  background: var(--card);
   border-radius: 8px;
   border: 1px solid var(--border);
   cursor: pointer;
   transition: all .15s;
+  position: relative;
 }
-.pack-item:hover { border-color: var(--accent-dim); background: var(--card-hover); }
-.pack-item.selected { border-color: var(--green); background: var(--green-dim); }
-.pack-item.disabled { opacity: .4; cursor: not-allowed; }
+.pack-item:hover { border-color: var(--border-light); background: var(--card-hover); }
+.pack-item.selected { border-color: var(--green); background: var(--green-dim); border-left: 3px solid var(--green); }
+.pack-item.disabled { opacity: .45; cursor: not-allowed; }
 .pack-item input[type="checkbox"] {
-  width: 18px; height: 18px;
+  width: 16px; height: 16px;
   accent-color: var(--green);
   cursor: pointer;
+  flex-shrink: 0;
 }
-.pack-name { font-weight: 600; flex: 1; font-size: 13px; }
-.pack-price { color: var(--orange); font-weight: 700; font-size: 13px; min-width: 50px; text-align: right; }
-.pack-free { color: var(--green); font-weight: 700; font-size: 13px; min-width: 50px; text-align: right; }
-.pack-meta { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
-.pack-info { flex: 1; }
+.pack-top { display: flex; align-items: center; gap: 6px; }
+.pack-name { font-weight: 600; flex: 1; font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pack-price { color: var(--orange); font-weight: 700; font-size: 12px; }
+.pack-free { color: var(--green); font-weight: 700; font-size: 12px; }
+.pack-meta { font-size: 10px; color: var(--text-muted); line-height: 1.4; }
+.pack-bottom { display: flex; align-items: center; justify-content: space-between; gap: 6px; }
 .pack-qty {
-  width: 50px;
-  background: var(--card);
+  width: 42px;
+  background: var(--bg);
   border: 1px solid var(--border);
   border-radius: 6px;
-  padding: 4px 8px;
+  padding: 3px 6px;
   color: var(--text);
-  font-size: 13px;
+  font-size: 12px;
   text-align: center;
 }
 .pack-qty:focus { outline: none; border-color: var(--accent); }
@@ -323,24 +339,27 @@ body {
 .table-wrap { overflow-x: auto; border-radius: 8px; border: 1px solid var(--border); }
 table { width: 100%; border-collapse: collapse; font-size: 12px; }
 th {
-  background: var(--card-hover);
+  background: linear-gradient(180deg, var(--card-hover), var(--card));
   padding: 10px 12px;
   text-align: left;
   font-weight: 700;
   color: var(--text-dim);
-  border-bottom: 1px solid var(--border);
+  border-bottom: 2px solid var(--border-light);
   white-space: nowrap;
   position: sticky;
   top: 0;
 }
 td {
-  padding: 8px 12px;
+  padding: 9px 12px;
   border-bottom: 1px solid var(--border);
   white-space: nowrap;
 }
-tr:hover td { background: var(--card-hover); }
+tr:hover td { background: rgba(78,154,241,.04); }
+tr:nth-child(even) td { background: rgba(255,255,255,.015); }
+tr:nth-child(even):hover td { background: rgba(78,154,241,.06); }
 tr.round-end td { border-bottom: 2px solid var(--accent-dim); font-weight: 700; }
-tr.highlight td { background: var(--purple-dim); }
+tr.highlight td { background: var(--purple-dim) !important; }
+tr.highlight td:first-child { border-left: 3px solid var(--purple); }
 .treasure-btn {
   padding: 8px 16px; border-radius: 8px; font-weight: 700; font-size: 13px;
   cursor: pointer; transition: all .2s; border: 1px solid;
@@ -366,7 +385,7 @@ tr.highlight td { background: var(--purple-dim); }
 
 /* Result Box */
 .result-box {
-  background: var(--bg);
+  background: var(--card);
   border-radius: 10px;
   padding: 16px;
   border: 1px solid var(--border);
@@ -473,6 +492,7 @@ tr.highlight td { background: var(--purple-dim); }
   border: 1px solid var(--border);
   margin-bottom: 16px;
   overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0,0,0,.15);
 }
 .guide-header {
   display: flex;
@@ -597,7 +617,7 @@ tr.highlight td { background: var(--purple-dim); }
   display: flex;
   gap: 4px;
   margin-bottom: 12px;
-  height: 48px;
+  height: 52px;
   border-radius: 8px;
   overflow: hidden;
 }
@@ -641,138 +661,11 @@ tr.highlight td { background: var(--purple-dim); }
   font-weight: 700;
   font-size: 13px;
 }
-/* ═══ 使用认证：密码门 ═══ */
-.auth-overlay {
-  position: fixed; inset: 0; z-index: 9999;
-  background: var(--bg);
-  display: flex; align-items: center; justify-content: center;
-  padding: 20px;
-}
-body.auth-lock #app { display: none; }
-.auth-box {
-  width: 100%; max-width: 380px;
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 36px 30px 28px;
-  box-shadow: var(--shadow);
-  text-align: center;
-}
-.auth-icon { font-size: 42px; margin-bottom: 14px; }
-.auth-title { font-size: 19px; font-weight: 800; margin-bottom: 8px; }
-.auth-sub { font-size: 12px; color: var(--text-dim); margin-bottom: 24px; line-height: 1.9; }
-.auth-input {
-  width: 100%; padding: 12px 16px;
-  background: var(--bg); border: 1px solid var(--border);
-  border-radius: 8px; color: var(--text);
-  font-size: 16px; text-align: center; letter-spacing: 2px;
-  transition: border-color .2s;
-}
-.auth-input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(78,154,241,.1); }
-.auth-btn {
-  width: 100%; margin-top: 14px; padding: 12px;
-  background: linear-gradient(135deg, var(--accent), var(--purple));
-  border: none; border-radius: 8px; color: #fff;
-  font-size: 14px; font-weight: 700; cursor: pointer;
-  transition: opacity .2s, transform .1s;
-}
-.auth-btn:hover { opacity: .92; }
-.auth-btn:active { transform: scale(.98); }
-.auth-error { font-size: 12px; color: var(--red); margin-top: 12px; min-height: 18px; }
-.auth-box.shake { animation: authShake .4s; }
-@keyframes authShake {
-  0%, 100% { transform: translateX(0); }
-  20%, 60% { transform: translateX(-8px); }
-  40%, 80% { transform: translateX(8px); }
-}
-.auth-hint { font-size: 11px; color: var(--text-muted); margin-top: 10px; line-height: 1.8; }
+
 </style>
 </head>
-<body class="auth-lock">
-<!-- ═══ 使用认证：动态验证码 ═══ -->
-<div class="auth-overlay" id="authOverlay" style="display:none;">
-  <div class="auth-box" id="authBox">
-    <div class="auth-icon">🔐</div>
-    <div class="auth-title">需要验证码</div>
-    <div class="auth-sub">本工具仅限授权用户使用<br>请向站长索取当前验证码后输入</div>
-    <input type="text" class="auth-input" id="authInput" placeholder="输入 6 位验证码" inputmode="numeric" autocomplete="off" maxlength="6">
-    <button class="auth-btn" id="authBtn">验证进入</button>
-    <div class="auth-error" id="authError"></div>
-    <div class="auth-hint">验证码每 30 分钟自动更换，输入正确后 6 小时内免重复输入<br>验证码不对或过期时，请找站长索取新验证码</div>
-  </div>
-</div>
-<script>
-// ═══ 使用认证：动态验证码 ═══
-// 访客打开网站 → 向站长索取验证码 → 输入进入
-// 验证码由密钥+时间窗口自动生成，每 30 分钟更换，站长用桌面的"验证码生成器.html"查看当前码
-// 想调整严格程度：改 SESSION_HOURS（输入一次后多少小时免重复输入）
-const AUTH_SECRET = 'TH2026-K7Q4-M9XZ-LOUO';   // 密钥：和生成器页面里的一致，泄露后两处一起换
-const WINDOW_MS = 30 * 60 * 1000;              // 验证码轮换周期（30分钟）
-const SESSION_HOURS = 6;                       // 输入正确后多少小时内免重复输入
-const MASTER_HASH = 'a825853eb323d6ca13e856e22e7b1a41de51e2a8641844d3b75928fedb92ad36'; // 站长主密码 tunhuo2026 的哈希
-const MASTER_DAYS = 30;                        // 站长用主密码进入后多少天免输
-const MAX_FAILS = 5, LOCK_MS = 30000;          // 连续错误5次锁定30秒
+<body>
 
-function authUnlock() {
-  document.body.classList.remove('auth-lock');
-  document.getElementById('authOverlay').style.display = 'none';
-}
-function logoutAuth() {
-  ['hf_master_ts', 'hf_code_ts'].forEach(k => localStorage.removeItem(k));
-  location.reload();
-}
-async function authSha256(str) {
-  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
-  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
-}
-// 某个时间窗口对应的6位验证码
-async function codeForWindow(idx) {
-  const h = await authSha256(AUTH_SECRET + '|' + idx);
-  return String(parseInt(h.slice(0, 12), 16) % 1000000).padStart(6, '0');
-}
-let authFails = 0, authLockUntil = 0;
-async function authTry() {
-  const input = document.getElementById('authInput');
-  const btn = document.getElementById('authBtn');
-  const err = document.getElementById('authError');
-  const box = document.getElementById('authBox');
-  const val = input.value.trim();
-  if (!val || Date.now() < authLockUntil) return;
-  btn.disabled = true; btn.textContent = '验证中…';
-  const w = Math.floor(Date.now() / WINDOW_MS);
-  let result = null;
-  if (await authSha256(val) === MASTER_HASH) result = 'master';
-  else if (val === await codeForWindow(w)) result = 'code';
-  else if (val === await codeForWindow(w - 1)) result = 'code'; // 刚换码的宽限
-  btn.disabled = false; btn.textContent = '验证进入';
-  if (result) {
-    localStorage.setItem(result === 'master' ? 'hf_master_ts' : 'hf_code_ts', String(Date.now()));
-    authUnlock();
-    return;
-  }
-  input.value = ''; input.focus();
-  authFails++;
-  if (authFails >= MAX_FAILS) {
-    authLockUntil = Date.now() + LOCK_MS;
-    authFails = 0;
-    err.textContent = '错误次数过多，已锁定 30 秒';
-  } else {
-    err.textContent = '验证码不正确，还可尝试 ' + (MAX_FAILS - authFails) + ' 次';
-  }
-  box.classList.remove('shake'); void box.offsetWidth; box.classList.add('shake');
-}
-(function authInit() {
-  const masterTs = Number(localStorage.getItem('hf_master_ts') || 0);
-  if (masterTs && Date.now() - masterTs < MASTER_DAYS * 86400000) { authUnlock(); return; }
-  const codeTs = Number(localStorage.getItem('hf_code_ts') || 0);
-  if (codeTs && Date.now() - codeTs < SESSION_HOURS * 3600000) { authUnlock(); return; }
-  document.getElementById('authOverlay').style.display = 'flex';
-  const input = document.getElementById('authInput');
-  setTimeout(() => input.focus(), 50);
-  document.getElementById('authBtn').addEventListener('click', authTry);
-  input.addEventListener('keydown', e => { if (e.key === 'Enter') authTry(); });
-})();
-</script>
 <div class="app" id="app">
   <!-- Header -->
   <div class="header">
@@ -826,7 +719,7 @@ async function authTry() {
         <div class="guide-step">
           <div class="guide-step-num">4</div>
           <div class="guide-step-text">
-            <strong>③ 综合分析</strong>（自动计算）— 系统自动算出当期最大可达次数、资源盈亏、需囤天数和预算<br>
+            <strong>③ 综合分析</strong>（自动计算）— 左侧显示当期最大可达次数和资源明细，右侧按你设定的目标推算差距和预计完成时间<br>
             <strong>④ 选择礼包</strong> — 勾选您打算购买的礼包，填入购买次数，结果实时更新
           </div>
         </div>
@@ -1182,7 +1075,9 @@ function calculateOptimalReturns(act, totalExch) {
 
     for (const item of layerItems[l]) {
       if (needMore <= 0) break;
-      const canBuy = Math.min(item.limit - item.bought, Math.ceil(needMore / item.price));
+      const budget = totalExch - spent;
+      if (budget < item.price) continue;
+      const canBuy = Math.min(item.limit - item.bought, Math.ceil(needMore / item.price), Math.floor(budget / item.price));
       if (canBuy <= 0) continue;
       item.bought += canBuy;
       spent += canBuy * item.price;
@@ -1279,26 +1174,23 @@ function getMaxCountWithReturns(act, stock, totalExch) {
   };
 }
 
-function getPackTotals(act, packSelections, assocWeeks = 3) {
-  const cfg = DATA[act];
-  let totalCons = 0, totalExch = 0, totalCost = 0;
-  
-  for (let i = 0; i < cfg.packs.length; i++) {
-    const p = cfg.packs[i];
-    const qty = packSelections[i] || 0;
-    if (qty > 0) {
-      totalCons += p.cons * qty;
-      totalExch += p.exch * qty;
-      totalCost += p.price * qty;
-    }
+// 完成目标需自备的道具数：二分查找最小持有量，使全模拟（含打的过程中返还）恰好能完成目标
+// 返回：需自备数量；-1 表示目标超出全部轮次无法完成
+function findNeededStock(act, baseExch, targetCount) {
+  const tasks = DATA[act].tasks;
+  const last = tasks[tasks.length - 1][1];
+  if (!targetCount || targetCount <= 0) return 0;
+  if (targetCount > last) return -1;
+  let hi = last + 500;
+  if (getMaxCountWithReturns(act, hi, baseExch).rawCount < targetCount) return -1;
+  let lo = 0, best = hi;
+  while (lo <= hi) {
+    const mid = (lo + hi) >> 1;
+    if (getMaxCountWithReturns(act, mid, baseExch).rawCount >= targetCount) { best = mid; hi = mid - 1; }
+    else lo = mid + 1;
   }
-  // Add association store (assocWeeks weeks per cycle, default 3)
-  totalCons += cfg.assoc * assocWeeks;
-  
-  return { totalCons, totalExch, totalCost };
+  return best;
 }
-
-// Exchange currency from packs (free + bound + paid) for a single period
 function getPackExchTotal(act) {
   const cfg = DATA[act];
   let total = 0;
@@ -1518,6 +1410,23 @@ let state = {
 
 // ═══════════════════════════════════════════════
 // RENDER
+// 根据日历自动计算协会可领次数：活动起始日与服务器的协会刷新日对齐则为1，错开跨周则为2
+function getAutoAssocCount(act) {
+  const cfg = DATA[act];
+  const today = new Date();
+  const refDate = getCycleRefDate();
+  const serverStart = getServerStartDate();
+  const cdNow = ((daysDiff(refDate, today) % 21) + 21) % 21;
+  const actStartDay = cfg.weekSlot * 7;
+  let actStartDate;
+  if (cdNow >= actStartDay && cdNow <= actStartDay + 6) {
+    actStartDate = new Date(today.getFullYear(), today.getMonth(), today.getDate() - (cdNow - actStartDay));
+  } else {
+    actStartDate = getNextActivityDate(act, today);
+  }
+  return actStartDate.getDay() === serverStart.getDay() ? 1 : 2;
+}
+
 // ═══════════════════════════════════════════════
 function computeMaxCount(act) {
   const cfg = DATA[act];
@@ -1529,7 +1438,7 @@ function computeMaxCount(act) {
     else if (p.type === '绑购') { freeCons += p.cons * p.limit; boundExch += p.exch * p.limit; }
     else { packCons += p.cons * qty; packExch += p.exch * qty; }
   });
-  freeCons += cfg.assoc * (state.assocCount[act] || 0);
+  freeCons += cfg.assoc * getAutoAssocCount(act);
   const totalCons = state.stock[act] + freeCons + packCons;
   const totalExch = state.exchStock[act] + freeExch + boundExch + packExch;
   return getMaxCountWithReturns(act, totalCons, totalExch).count;
@@ -1553,11 +1462,11 @@ function render() {
           <input type="number" id="stock" value="${state.stock[act]}" min="0" max="99999">
         </div>
         <div class="input-group" style="display:flex;align-items:center;gap:10px;margin-top:10px;">
-          <label for="assocCount" style="margin:0;font-size:12px;color:var(--text-dim);line-height:1.5;flex:1;">
+          <span style="font-size:12px;color:var(--text-dim);line-height:1.5;flex:1;">
             本期协会可领次数<br>
-            <span style="font-size:11px;color:var(--text-muted);">活动期间内协会刷新几次就填几（一般填1，跨周可能填2）</span>
-          </label>
-          <input type="number" id="assocCount" value="${state.assocCount[act]}" min="0" max="2" style="width:60px;">
+            <span style="font-size:11px;color:var(--text-muted);">根据日历自动计算（活动起始日与协会刷新日对齐=1，跨周=2）</span>
+          </span>
+          <span style="width:60px;text-align:center;font-size:18px;font-weight:700;color:var(--accent);">${getAutoAssocCount(act)}</span>
         </div>
       </div>
 
@@ -1590,7 +1499,7 @@ function render() {
 
     <!-- Row 3: Pack Selection (full width) -->
     <div class="card" style="margin-bottom:16px;">
-      <div class="card-title"><span class="step-badge">4</span>礼包选择（勾选并填购买次数）<span class="card-hint">勾选=满限购买，可修改次数</span></div>
+      <div class="card-title"><span class="step-badge">4</span>礼包选择（勾选并填购买次数）<span class="card-hint">免费+绑购已自动计入，仅勾选付费礼包</span></div>
       ${renderPackList(act)}
     </div>
 
@@ -1633,24 +1542,22 @@ function renderPackList(act) {
     <div class="pack-list">
       ${cfg.packs.map((p, i) => {
         const sel = state.packSelections[act][i] || 0;
-        const isFree = p.price === 0;
+        if (p.type === '免费' || p.type === '绑购') return '';
         return `
-          <div class="pack-item ${sel>0?'selected':''} ${isFree?'':'clickable'}" onclick="if(!${isFree})togglePack(${i})">
-            <input type="checkbox" ${sel>0?'checked':''} ${isFree?'disabled':''} 
-                   onclick="event.stopPropagation(); togglePack(${i})">
-            <div class="pack-info">
-              <div class="pack-name">${p.name}</div>
-              <div class="pack-meta">
-                ${p.cons}${c} + ${p.exch}${e}${p.jade>0?` + ${p.jade}活玉`:''}
-                ${!isFree ? ` | 每元${c}:${(p.cons/p.price).toFixed(2)} 每元${e}:${(p.exch/p.price).toFixed(2)}` : ''}
-              </div>
+          <div class="pack-item ${sel>0?'selected':''} clickable" onclick="togglePack(${i})">
+            <div class="pack-top">
+              <input type="checkbox" ${sel>0?'checked':''}
+                     onclick="event.stopPropagation(); togglePack(${i})">
+              <span class="pack-name">${p.name}</span>
+              <span class="pack-price">${p.price}元</span>
             </div>
-            <input type="number" class="pack-qty" value="${sel}" min="0" max="${p.limit}" 
-                   onclick="event.stopPropagation()"
-                   onchange="setPackQty(${i}, this.value)"
-                   data-tooltip="限购${p.limit}次">
-            <div style="min-width:55px;text-align:right;">
-              ${isFree ? '<span class="pack-free">免费</span>' : `<span class="pack-price">${p.price}元</span>`}
+            <div class="pack-meta">${p.cons}${c}+${p.exch}${e}${p.jade>0?`+${p.jade}玉`:''}</div>
+            <div class="pack-bottom">
+              <input type="number" class="pack-qty" value="${sel}" min="0" max="${p.limit}"
+                     onclick="event.stopPropagation()"
+                     onchange="setPackQty(${i}, this.value)"
+                     data-tooltip="限购${p.limit}次">
+              <span style="font-size:10px;color:var(--text-muted);">/${p.limit}</span>
             </div>
           </div>
         `;
@@ -1733,7 +1640,19 @@ function renderReverseResults(act) {
   const leftover = inputExch - actualExch;
   const nextExch = nextNode ? nextNode.exch : null;
   const needMore = nextExch ? nextExch - inputExch : 0;
-  
+
+  // 预计算轮次速查HTML
+  let roundSummaryHTML = '';
+  for (let rd = 1; rd <= 7; rd++) {
+    const rNet = getNetConsumption(act, ends[rd - 1]);
+    const rReachable = inputExch !== null && rNet.totalExch <= inputExch;
+    roundSummaryHTML += '<div class="round-cell ' + (rReachable ? 'reachable' : '') + '">'
+      + '<div class="rc-label">第' + rd + '轮满</div>'
+      + '<div class="rc-count">' + ends[rd-1] + '次</div>'
+      + '<div class="rc-net">净耗' + rNet.net + c + '</div>'
+      + '</div>';
+  }
+
   return `
     <div class="grid-2" style="margin-bottom:16px;">
       <div class="kpi blue" style="text-align:left;padding-left:20px;">
@@ -1779,7 +1698,26 @@ function renderReverseResults(act) {
       </div>
     </div>
     ` : '<div class="note">输入数量不足，无法反推</div>'}
-    <div style="margin-top:8px;margin-bottom:6px;font-size:13px;color:var(--text-dim);">📍=当前资源可达 | ✓=反推可达 | ✗=反推不足</div>
+    <style>
+      .disabled-row td { opacity: .35; }
+      tr[data-round="1"] td, tr[data-round="3"] td, tr[data-round="5"] td, tr[data-round="7"] td { background: rgba(78,154,241,.03); }
+      .round-summary { display:grid; grid-template-columns:repeat(7,1fr); gap:6px; margin-bottom:14px; }
+      .round-cell { text-align:center; padding:10px 6px; border-radius:8px; border:1px solid var(--border); background:var(--card); transition:all .2s; }
+      .round-cell.reachable { border-color:var(--green); background:var(--green-dim); }
+      .round-cell .rc-label { font-size:11px; color:var(--text-dim); }
+      .round-cell .rc-count { font-size:16px; font-weight:800; margin:2px 0; }
+      .round-cell .rc-net { font-size:11px; color:var(--red); }
+      .round-cell.reachable .rc-count { color:var(--green); }
+    </style>
+    <div class="round-summary">
+      ${roundSummaryHTML}
+    </div>
+    <div style="margin-bottom:6px;font-size:12px;color:var(--text-dim);display:flex;gap:16px;flex-wrap:wrap;">
+      <span><span style="display:inline-block;width:12px;height:12px;background:var(--green-dim);border:1px solid var(--green);border-radius:3px;vertical-align:middle;margin-right:4px;"></span>绿底=反推可达</span>
+      <span><span class="badge badge-info">📍</span>=当前资源可达</span>
+      <span><span class="badge badge-ok">✓</span>=反推可达</span>
+      <span><span class="badge badge-no">✗</span>=反推不足</span>
+    </div>
     ${renderRoundTable(act, computeMaxCount(act), inputExch)}
   `;
 }
@@ -1840,12 +1778,12 @@ function renderRoundTable(act, maxCount = 0, reverseExch = null) {
     }
 
     rows += `
-      <tr ${classes.length ? `class="${classes.join(' ')}"` : ''}>
-        <td>${nodeLabel} ${isMaxNode ? '<span class="badge badge-info" style="margin-left:4px;">📍 当前</span>' : ''}</td>
-        <td><strong>${count}</strong></td>
-        <td>${consumed}</td>
+      <tr data-round="${round}" ${classes.length ? `class="${classes.join(' ')}"` : ''}>
+        <td>${nodeLabel} ${isMaxNode ? '<span class="badge badge-info" style="margin-left:4px;">📍</span>' : ''}</td>
+        <td><strong style="font-size:13px;">${count}</strong></td>
+        <td style="color:var(--text-dim)">${consumed}</td>
         <td style="color:var(--green)">+${cumConsRet}</td>
-        <td style="color:var(--red)">${net}</td>
+        <td style="color:var(--red);font-weight:600;">${net}</td>
         <td style="color:var(--purple);font-weight:700;">${totalExch}</td>
         ${reverseExch !== null ? `<td style="text-align:center;">${reverseStatus}</td>` : ''}
       </tr>
@@ -1853,8 +1791,7 @@ function renderRoundTable(act, maxCount = 0, reverseExch = null) {
   }
 
   return `
-    <style>.disabled-row td { opacity: .4; }</style>
-    <div class="table-wrap" style="max-height:500px;overflow-y:auto;">
+    <div class="table-wrap" style="max-height:420px;overflow-y:auto;">
       <table>
         <thead>
           <tr>
@@ -1864,7 +1801,7 @@ function renderRoundTable(act, maxCount = 0, reverseExch = null) {
             <th>累计返还</th>
             <th>净消耗${c}</th>
             <th>累计${e}</th>
-            ${reverseExch !== null ? `<th>反推</th>` : ''}
+            ${reverseExch !== null ? `<th style="text-align:center;">反推</th>` : ''}
           </tr>
         </thead>
         <tbody>${rows}</tbody>
@@ -1884,6 +1821,7 @@ function getAvailableExch(act) {
   const net = getNetConsumption(act, targetCount);
   const packExch = getPackExchTotal(act);
   return {
+    targetCount,
     stock: state.exchStock[act],
     fromPacks: packExch,
     fromTarget: net.totalExch,
@@ -2002,7 +1940,11 @@ function renderTreasureTable(act) {
   }
   
   const remaining = avail.total - totalPlanned;
-  
+  // 目标可达性核对：按当前资源实际能打到的次数，算真实可赚精魄
+  const maxCount = computeMaxCount(act);
+  const targetReachable = maxCount >= avail.targetCount;
+  const realEarnable = avail.stock + avail.fromPacks + getNetConsumption(act, maxCount).totalExch;
+
   return `
     <div class="grid-4" style="margin-bottom:14px;">
       <div class="kpi blue">
@@ -2010,10 +1952,12 @@ function renderTreasureTable(act) {
         <div class="kpi-value" style="font-size:18px;">${avail.fromPacks}</div>
         <div class="kpi-unit">礼包获得</div>
       </div>
-      <div class="kpi green">
+      <div class="kpi ${targetReachable ? 'green' : 'orange'}">
         <div class="kpi-label">目标完成获得</div>
         <div class="kpi-value" style="font-size:18px;">+${avail.fromTarget}</div>
-        <div class="kpi-unit">挑战+通关</div>
+        <div class="kpi-unit">${targetReachable
+          ? '挑战+通关'
+          : `⚠ 当前最多${maxCount}次，实得约+${realEarnable}`}</div>
       </div>
       <div class="kpi orange">
         <div class="kpi-label">已计划消耗</div>
@@ -2031,10 +1975,11 @@ function renderTreasureTable(act) {
         <button class="treasure-btn secondary" onclick="clearTreasure()">清空</button>
       </div>
       <div style="font-size:13px;color:var(--text-dim);">
-        可用${e}: <strong style="color:var(--accent);font-size:16px;">${avail.total}</strong>
-        ${remaining >= 0 
+        可用${e}: <strong style="color:var(--accent);font-size:16px;">${avail.total}</strong>（按目标${avail.targetCount}次计）
+        ${remaining >= 0
           ? ` → 消耗 <strong style="color:var(--orange);">${totalPlanned}</strong> → 剩余 <strong style="color:var(--green);">${remaining}</strong> +返还${totalReturn}${c}`
           : ` → 需 <strong style="color:var(--red);">${totalPlanned}</strong> → 缺口 <strong style="color:var(--red);">${-remaining}</strong>`}
+        ${!targetReachable ? `<br><span style="font-size:11px;color:var(--orange);">※ 当前资源最多完成${maxCount}次，实际可赚精魄约${realEarnable}（未达标按此规划）</span>` : ''}
       </div>
     </div>
     <div class="table-wrap" style="max-height:450px;overflow-y:auto;">
@@ -2080,7 +2025,8 @@ function renderMergedAnalysis(act) {
     }
   });
   
-  freeCons += cfg.assoc * (state.assocCount[act] || 0);
+  freeCons += cfg.assoc * getAutoAssocCount(act);
+  const autoAssoc = getAutoAssocCount(act);
 
   const stockCons = state.stock[act];
   const stockExch = state.exchStock[act];
@@ -2107,30 +2053,38 @@ function renderMergedAnalysis(act) {
     targetCount = state.targetCount[act] || 100;
   }
   const targetNet = getNetConsumption(act, targetCount);
-  const canReachTarget = maxCount >= targetCount;
-  const targetTotalExch = stockExch + getPackExchTotal(act) + targetNet.totalExch;
-  const targetTreasureReturns = calculateOptimalReturns(act, targetTotalExch);
-  const targetNetAfterReturns = targetNet.net - targetTreasureReturns;
-  // Use simulation-based deficit: gap between target and current max, minus remaining resources
-  const gapNet = targetNet.net - netInfo.net;
-  const rawDeficit = Math.max(0, gapNet - remaining);
-  const deficit = canReachTarget ? 0 : Math.max(1, rawDeficit);
+  const canReachTarget = maxResult.rawCount >= targetCount;
+  // 需自备数量：完成目标实际要准备的道具（过程返还已如实抵扣），与你的库存直接对比
+  const neededStock = findNeededStock(act, totalExch, targetCount);
+  const deficit = canReachTarget ? 0 : (neededStock < 0 ? -1 : neededStock - totalCons);
   
-  // Pack totals (3-week cycle for stockpile calc)
-  const packTotals = getPackTotals(act, state.packSelections[act]);
-  const perCycleCons = packTotals.totalCons;
-  const perCycleExch = packTotals.totalExch;
-  const perCycleCost = packTotals.totalCost;
+  // 每期收入模型（用于完成时间预测）
+  const offAssoc = cfg.assoc * 2;                        // 两周非活动期的协会收入
+  const periodIncome = freeCons + boundCons + packCons;   // 每期活动内仙刃收入
+  const perPeriodGain = offAssoc + periodIncome;          // 每期可净攒的仙刃（结余累计用）
   
-  // Stockpiling calculation
-  const cyclesNeeded = perCycleCons > 0 ? deficit / perCycleCons : 0;
-  const totalBudget = cyclesNeeded > 0 ? Math.ceil(cyclesNeeded) * perCycleCost : 0;
+  // 日期基准：本期活动开始日 / 下期开始日
   const today = new Date();
-  const totalDays = cyclesNeeded * 21;
-  const completeDate = new Date(today.getTime() + totalDays * 24 * 3600 * 1000);
-  const nextDate = getNextActivityDate(act, completeDate);
-  const waitDays = Math.round((nextDate - today) / (24 * 3600 * 1000));
-  const hoardDays = Math.round(totalDays);
+  const cdNow = ((daysDiff(getCycleRefDate(), today) % 21) + 21) % 21;
+  const actStartDay = cfg.weekSlot * 7;
+  const activeNow = cdNow >= actStartDay && cdNow <= actStartDay + 6;
+  const curStart = activeNow
+    ? new Date(today.getFullYear(), today.getMonth(), today.getDate() - (cdNow - actStartDay))
+    : getNextActivityDate(act, today);
+  const nextDate = new Date(curStart);
+  if (activeNow) nextDate.setDate(curStart.getDate() + 21);
+  const waitDays = daysDiff(today, nextDate);
+  // 完成时间预测：以你现有资源为起点，每期净攒 perPeriodGain，攒到"需自备"数量后那一期可完成
+  let forecastN = 0, forecastDate = null, forecastDays = 0;
+  if (!canReachTarget && neededStock > 0 && perPeriodGain > 0) {
+    forecastN = Math.ceil((neededStock - totalCons) / perPeriodGain);
+    if (forecastN >= 1 && forecastN <= 12) {
+      forecastDate = new Date(curStart);
+      forecastDate.setDate(curStart.getDate() + forecastN * 21);
+      forecastDays = daysDiff(today, forecastDate);
+    } else forecastN = 0;
+  }
+  const totalBudget = canReachTarget ? 0 : packCost * forecastN;
   const initialNode = getTaskNodeInfo(act, maxResult.initialCount);
   const improved = maxCount > initialNode.reachedCount;
   
@@ -2140,17 +2094,17 @@ function renderMergedAnalysis(act) {
       <div class="kpi blue">
         <div class="kpi-label">目标挑战</div>
         <div class="kpi-value">${targetCount}次</div>
-        <div class="kpi-unit">第${targetNet.round}/7轮 | 净消耗${targetNet.net}${c}${targetTreasureReturns > 0 ? `→扣宝库返还${targetTreasureReturns}=${targetNetAfterReturns}` : ''}</div>
+        <div class="kpi-unit">第${targetNet.round}/7轮${neededStock >= 0 ? ` | 完成需自备${neededStock}${c}` : ' | 超出轮次上限'}</div>
       </div>
       <div class="kpi ${canReachTarget ? 'green' : 'red'}">
         <div class="kpi-label">当期最大可达</div>
         <div class="kpi-value">${maxCount}次</div>
         <div class="kpi-unit">第${nodeInfo.round}/7轮·${nodeInfo.isRoundEnd ? '满轮' : '第' + nodeInfo.nodeInRound + '/6节点'} ${nodeInfo.toNext > 0 ? `| 距下一节点${nodeInfo.toNext}次` : ''}</div>
       </div>
-      <div class="kpi ${deficit > 0 ? 'red' : 'green'}">
-        <div class="kpi-label">${deficit > 0 ? '需囤' : '盈余'}${c}</div>
-        <div class="kpi-value">${deficit > 0 ? deficit : Math.max(0, stockCons - targetNetAfterReturns)}</div>
-        <div class="kpi-unit">当期可用${totalCons} | 需${targetNetAfterReturns}${targetTreasureReturns > 0 ? `(扣返还)` : ''}${deficit > 0 ? ` | 差${deficit}` : ''}</div>
+      <div class="kpi ${deficit > 0 || neededStock < 0 ? 'red' : 'green'}">
+        <div class="kpi-label">${deficit > 0 ? '还需' : '盈余'}${c}</div>
+        <div class="kpi-value">${neededStock < 0 ? '—' : (deficit > 0 ? deficit : Math.max(0, totalCons - neededStock))}</div>
+        <div class="kpi-unit">${neededStock < 0 ? '目标超出全部轮次' : `你有${totalCons} | 需自备${neededStock}${deficit > 0 ? ` | 差${deficit}` : ''}`}</div>
       </div>
       <div class="kpi orange">
         <div class="kpi-label">合计可用${e}</div>
@@ -2158,9 +2112,9 @@ function renderMergedAnalysis(act) {
         <div class="kpi-unit">挑战${exchFromChallenges}+礼包${totalExch}</div>
       </div>
       <div class="kpi purple">
-        <div class="kpi-label">需囤天数</div>
-        <div class="kpi-value">${canReachTarget ? 0 : Math.max(1, hoardDays)}天</div>
-        <div class="kpi-unit">${canReachTarget ? '已达标' : (hoardDays > 0 ? '预计完成' + formatDate(completeDate) : '差' + deficit + c + '，下期可达标')}</div>
+        <div class="kpi-label">预计完成</div>
+        <div class="kpi-value">${canReachTarget ? '当期' : (forecastDate ? forecastDays + '天' : '—')}</div>
+        <div class="kpi-unit">${canReachTarget ? '当期即可完成' : (forecastDate ? formatDate(forecastDate) + '·攒' + forecastN + '期后' : '目标过高或需加预算')}</div>
       </div>
     </div>
     ${improved ? `
@@ -2179,8 +2133,9 @@ function renderMergedAnalysis(act) {
     </div>
     ` : ''}
     <div class="grid-2" style="margin-bottom:14px;gap:16px;">
-      <div class="table-wrap">
-        <table>
+      <div style="border-radius:8px;border:1px solid var(--border);overflow:hidden;">
+        <table style="table-layout:fixed;word-break:break-word;">
+          <colgroup><col style="width:38%"><col style="width:31%"><col style="width:31%"></colgroup>
           <thead>
             <tr>
               <th>当期资源明细</th>
@@ -2189,23 +2144,22 @@ function renderMergedAnalysis(act) {
             </tr>
           </thead>
           <tbody>
-            <tr><td>当前库存<span style="font-size:10px;color:var(--text-muted);"> (活动前)</span></td><td><strong>${stockCons}</strong></td><td style="color:var(--text-muted)">— (每期清零)</td></tr>
-              <tr><td>免费(含协会)<span style="font-size:10px;color:var(--text-muted);"> (自动)</span></td><td>+${freeCons}</td><td>+${freeExch}</td></tr>
-              <tr><td colspan="3" style="font-size:11px;color:var(--text-muted);">含协会×${state.assocCount[act] || 0}（${cfg.assoc * (state.assocCount[act] || 0)}${c}）</td></tr>
+            <tr><td>当前库存</td><td><strong>${stockCons}</strong></td><td style="color:var(--text-muted)">—</td></tr>
+            <tr><td>免费(含协会×${autoAssoc})</td><td>+${freeCons}</td><td>+${freeExch}</td></tr>
             <tr><td>绑购</td><td>+${boundCons}</td><td>+${boundExch}</td></tr>
-            <tr><td>付费礼包</td><td>+${packCons}</td><td>+${packExch}</td></tr>
+            ${packCons > 0 ? `<tr><td>付费礼包</td><td>+${packCons}</td><td>+${packExch}</td></tr>` : ''}
             <tr class="highlight"><td><strong>当期可用</strong></td><td><strong style="color:var(--accent)">${totalCons}</strong></td><td><strong style="color:var(--accent)">${totalExch}</strong></td></tr>
-            ${maxResult.rawCount > maxCount ? `<tr><td colspan="3" style="font-size:11px;color:var(--text-muted);">可达${maxResult.rawCount}次, 取整至节点${maxCount}次, 多余${c}保留</td></tr>` : ''}
-            <tr class="highlight"><td><strong>挑战${maxCount}次</strong><br><span style="font-size:11px;color:var(--text-muted);">${nodeInfo.description}</span></td><td><strong style="color:var(--red)">-${netInfo.net}</strong></td><td><strong style="color:var(--green)">+${exchFromChallenges}</strong></td></tr>
-            ${treasureReturns > 0 ? `<tr><td>宝库返还${c}</td><td><strong style="color:var(--green)">+${treasureReturns}</strong></td><td>—</td></tr>` : ''}
+            <tr class="highlight"><td><strong>挑战${maxCount}次</strong></td><td><strong style="color:var(--red)">-${netInfo.net}</strong></td><td><strong style="color:var(--green)">+${exchFromChallenges}</strong></td></tr>
+            <tr><td>当期返还${c}<br><span style="font-size:11px;color:var(--text-muted);">节点返还${netInfo.consRet}＋宝库返还${treasureReturns}</span></td><td><strong style="color:var(--green)">+${netInfo.consRet + treasureReturns}</strong></td><td>—</td></tr>
             <tr class="highlight"><td><strong>剩余(保留至下期)</strong></td><td><strong style="color:${remaining > 0 ? 'var(--green)' : 'var(--text-muted)'}">${remaining}</strong></td><td><strong style="color:var(--green)">${totalExchEarned}</strong></td></tr>
             <tr><td>下一节点</td><td colspan="2" style="text-align:left;">${nodeInfo.nextDesc} ${nodeInfo.toNext > 0 ? `(还差${nodeInfo.toNext}次=${nodeInfo.toNext * cost}${c})` : ''}</td></tr>
-            <tr class="highlight"><td><strong>总预算</strong></td><td><strong style="color:var(--orange)">${packCost}元</strong></td><td>—</td></tr>
+            <tr class="highlight"><td><strong>总预算</strong></td><td colspan="2"><strong style="color:var(--orange)">${packCost}元</strong></td></tr>
           </tbody>
         </table>
       </div>
-      <div class="table-wrap">
-        <table>
+      <div style="border-radius:8px;border:1px solid var(--border);overflow:hidden;">
+        <table style="table-layout:fixed;word-break:break-word;">
+          <colgroup><col style="width:36%"><col style="width:64%"></colgroup>
           <thead>
             <tr>
               <th>目标规划</th>
@@ -2213,16 +2167,26 @@ function renderMergedAnalysis(act) {
             </tr>
           </thead>
           <tbody>
+            <tr class="highlight"><td><strong>目标挑战</strong></td><td><strong>${targetCount}次 · 第${targetNet.round}/7轮</strong></td></tr>
+            <tr><td>你当前可用${c}</td><td><strong style="color:var(--accent)">${totalCons}</strong></td></tr>
+            ${neededStock < 0 ? `<tr class="highlight"><td>完成需要</td><td><strong style="color:var(--red)">目标超出全部轮次，无法完成</strong></td></tr>` : `
+            <tr><td>当期返还${c}<br><span style="font-size:11px;color:var(--text-muted);">节点返还${netInfo.consRet}＋宝库返还${treasureReturns}</span></td><td><strong style="color:var(--green)">+${netInfo.consRet + treasureReturns}</strong></td></tr>
+            <tr><td>完成${targetCount}次需自备${c}</td><td><strong>${neededStock}</strong></td></tr>
+            ${canReachTarget
+              ? `<tr class="highlight"><td>当期结果</td><td><strong style="color:var(--green)">✓ 足够，当期即可完成${targetCount}次</strong></td></tr>`
+              : `<tr class="highlight"><td>当期结果</td><td><strong style="color:var(--red)">差${deficit}${c}（当期最多${maxResult.rawCount}次）</strong></td></tr>`}
             <tr><td>完成目标获得${e}</td><td style="color:var(--green)">+${targetNet.totalExch}</td></tr>
-            <tr><td>本期礼包获得${e}</td><td style="color:var(--green)">+${getPackExchTotal(act)}</td></tr>
-            <tr><td>合计可用${e}</td><td><strong style="color:var(--green)">+${getPackExchTotal(act) + targetNet.totalExch}</strong></td></tr>
-            <tr><td>宝库兑换返还${c}<br><span style="font-size:11px;color:var(--text-muted);">用${targetTotalExch}${e}兑换</span></td><td style="color:var(--green)">+${targetTreasureReturns}</td></tr>
-            <tr class="highlight"><td><strong>净消耗(扣宝库返还)</strong></td><td><strong style="color:var(--red)">${targetNetAfterReturns}</strong></td></tr>
-            <tr><td>每期获得${c}/${e}<br><span style="font-size:11px;color:var(--text-muted);">花费${perCycleCost}元/期</span></td><td style="color:var(--green)">+${perCycleCons}/+${perCycleExch}</td></tr>
-            <tr class="highlight"><td><strong>需囤周期数</strong></td><td><strong style="color:var(--orange)">${cyclesNeeded > 0 ? cyclesNeeded.toFixed(2) : '0'}</strong></td></tr>
+            <tr><td>免费+绑购礼包${e}</td><td style="color:var(--green)">+${freeExch + boundExch}</td></tr>
+            <tr class="highlight"><td><strong>合计${e}</strong></td><td><strong style="color:var(--green)">+${totalExch + targetNet.totalExch}</strong></td></tr>
+            <tr class="highlight"><td><strong>预计完成</strong></td><td>${canReachTarget
+                ? '<strong style="color:var(--green)">当期（本期活动内）</strong>'
+                : (forecastDate
+                  ? `<strong style="color:var(--orange)">${formatDate(forecastDate)}</strong>（约${forecastDays}天后）`
+                  : '<strong style="color:var(--red)">12期内攒不够</strong>')}</td></tr>
+            ${!canReachTarget && deficit > 0 && deficit <= 5 ? `<tr><td>提前达标</td><td>协会多领1次或买6元礼包(+5) → <strong style="color:var(--green)">当期即可完成</strong></td></tr>` : ''}
+            <tr><td>${activeNow ? '下期活动' : '本期开始'}</td><td>${formatDate(nextDate)}（约${waitDays}天后）</td></tr>
             <tr class="highlight"><td><strong>总预算</strong></td><td><strong style="color:var(--orange)">${totalBudget}元</strong></td></tr>
-            <tr class="highlight"><td><strong>预计完成</strong></td><td><strong>${canReachTarget ? '已达标' : (hoardDays > 0 ? formatDate(completeDate) : '差' + deficit + c + '，下期可达标')}<span style="font-size:11px;color:var(--text-muted);font-weight:400;"> (约${canReachTarget ? 0 : Math.max(1, hoardDays)}天后)</span></strong></td></tr>
-            <tr class="highlight"><td><strong>最近可参加</strong></td><td><strong>${cyclesNeeded > 0 ? formatDate(nextDate) : '—'}<span style="font-size:11px;color:var(--text-muted);font-weight:400;"> (约${waitDays}天后)</span></strong></td></tr>
+          `}
           </tbody>
         </table>
       </div>
@@ -2325,14 +2289,6 @@ function attachListeners() {
   bindInput('stock', 'stock', v => parseInt(v) || 0, true);
   bindInput('targetRound', 'targetRound', v => Math.max(1, Math.min(7, parseInt(v) || 1)), true);
   bindInput('targetCount', 'targetCount', v => Math.max(1, parseInt(v) || 1), true);
-  // Association store count input
-  const assocEl = document.getElementById('assocCount');
-  if (assocEl) {
-    assocEl.addEventListener('input', e => {
-      state.assocCount[act] = Math.max(0, Math.min(2, parseInt(e.target.value) || 0));
-      render();
-    });
-  }
   // Reverse calc: real-time update without losing input focus
   const revEl = document.getElementById('reverseExch');
   if (revEl) {
