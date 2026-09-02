@@ -709,10 +709,10 @@ tr.highlight td:first-child { border-left: 3px solid var(--purple); }
             <span style="color:var(--orange);">⚠ 系统会自动加上每日福利、绑购和协会商店，请勿把这些算进库存里！</span><br>
             <span style="color:var(--text-muted);">如果活动中途填写，请用当前库存减去已领取的免费资源（每日福利×已过天数 + 绑购×已过天数×2）</span><br><br>
             <span style="color:var(--accent);">📌 "本期协会可领次数"怎么填？举个例子：</span><br>
-            <span style="color:var(--text-muted);padding-left:16px;display:block;margin-top:4px;">假设活动8月19日~8月25日，协会商店每周一刷新：</span>
-            <span style="color:var(--green);padding-left:16px;display:block;margin-top:6px;">→ 8月19日~25日期间只有1个周一（8月24日），填 <strong>1</strong></span>
-            <span style="color:var(--orange);padding-left:16px;display:block;margin-top:6px;">→ 如果活动是8月18日~8月25日，期间有2个周一（8月18和8月25），填 <strong>2</strong></span>
-            <span style="color:var(--text-muted);padding-left:16px;display:block;margin-top:6px;">简单记：活动期间内有几个协会刷新日，就填几。一般情况填1即可。</span><br>
+            <span style="color:var(--text-muted);padding-left:16px;display:block;margin-top:4px;">协会商店每周一刷新，活动7天期间跨了几个周一就填几：</span>
+            <span style="color:var(--green);padding-left:16px;display:block;margin-top:6px;">→ 活动周一开始（如8月18日~8月24日），整个活动在同一周内，填 <strong>1</strong></span>
+            <span style="color:var(--orange);padding-left:16px;display:block;margin-top:6px;">→ 活动非周一开始（如9月2日~9月8日），跨了下周一，填 <strong>2</strong></span>
+            <span style="color:var(--text-muted);padding-left:16px;display:block;margin-top:6px;">系统已根据日历自动计算，无需手动填写。</span><br>
             <strong>② 设定目标</strong> — 选择"按轮次"（1-7轮）或"按次数"设定您想完成的挑战目标
           </div>
         </div>
@@ -1410,12 +1410,11 @@ let state = {
 
 // ═══════════════════════════════════════════════
 // RENDER
-// 根据日历自动计算协会可领次数：活动起始日与服务器的协会刷新日对齐则为1，错开跨周则为2
+// 根据日历自动计算协会可领次数：协会商店每周一刷新，活动起始日为周一则整个活动在同一周=1次，跨周一=2次
 function getAutoAssocCount(act) {
   const cfg = DATA[act];
   const today = new Date();
   const refDate = getCycleRefDate();
-  const serverStart = getServerStartDate();
   const cdNow = ((daysDiff(refDate, today) % 21) + 21) % 21;
   const actStartDay = cfg.weekSlot * 7;
   let actStartDate;
@@ -1424,7 +1423,7 @@ function getAutoAssocCount(act) {
   } else {
     actStartDate = getNextActivityDate(act, today);
   }
-  return actStartDate.getDay() === serverStart.getDay() ? 1 : 2;
+  return actStartDate.getDay() === 1 ? 1 : 2;
 }
 
 // ═══════════════════════════════════════════════
@@ -1464,7 +1463,7 @@ function render() {
         <div class="input-group" style="display:flex;align-items:center;gap:10px;margin-top:10px;">
           <span style="font-size:12px;color:var(--text-dim);line-height:1.5;flex:1;">
             本期协会可领次数<br>
-            <span style="font-size:11px;color:var(--text-muted);">根据日历自动计算（活动起始日与协会刷新日对齐=1，跨周=2）</span>
+            <span style="font-size:11px;color:var(--text-muted);">根据日历自动计算（活动起始日为周一=1次，跨周一=2次）</span>
           </span>
           <span style="width:60px;text-align:center;font-size:18px;font-weight:700;color:var(--accent);">${getAutoAssocCount(act)}</span>
         </div>
