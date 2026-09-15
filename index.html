@@ -132,6 +132,28 @@ body {
   background: linear-gradient(180deg, var(--accent), var(--purple));
   border-radius: 2px;
 }
+.collapsible-card .card-title {
+  cursor: pointer;
+  user-select: none;
+  transition: background .2s;
+  margin-bottom: 0;
+}
+.collapsible-card .card-title:hover { background: var(--card-hover); }
+.collapsible-body {
+  max-height: 5000px;
+  overflow: hidden;
+  transition: max-height .4s ease;
+  padding-top: 16px;
+}
+.collapsible-card.collapsed .collapsible-body { max-height: 0; padding-top: 0; }
+.collapsible-card.collapsed .card-title { border-bottom-color: transparent; }
+.collapse-arrow {
+  margin-left: auto;
+  font-size: 18px;
+  color: var(--text-dim);
+  transition: transform .3s;
+}
+.collapsible-card.collapsed .collapse-arrow { transform: rotate(-90deg); }
 
 /* Inputs */
 .input-group { margin-bottom: 14px; }
@@ -681,7 +703,7 @@ tr.highlight td:first-child { border-left: 3px solid var(--purple); }
   </div>
 
   <!-- User Guide -->
-  <div class="guide-card open" id="guideCard">
+  <div class="guide-card" id="guideCard">
     <div class="guide-header" onclick="document.getElementById('guideCard').classList.toggle('open')">
       <div class="guide-title">使用指南（新手必看）</div>
       <span class="guide-toggle">▼</span>
@@ -861,11 +883,11 @@ const DATA = {
       [4,140,0,8,1,5,0],[5,160,0,8,2,5,0],[6,180,0,8,1,10,0],[7,200,0,8,2,10,0],
     ],
     treasure: [
-      [1,'升星石×200',50,3],[1,'神兵碎晶×10000',50,3],[1,'紫色法则碎片×10',50,8],
-      [2,'珍品神兵碎片箱×20',100,4],[2,'神兵陨铁×1',75,4],[2,'橙色法则碎片×20',100,12],
-      [3,'仙界宝物碎片箱·橙×40',100,2],[3,'神兵陨铁×2',150,2],[3,'红神兵养成自选箱×2',150,30],
+      [1,'升星石×200',50,3],[1,'神兵碎晶×10000',50,3],[1,'灵韵仙蛋×5',50,8],
+      [2,'珍品神兵碎片箱×20',100,4],[2,'神兵陨铁×1',75,4],[2,'虹光仙果×10',200,6],
+      [3,'仙界宝物碎片箱·橙×40',100,2],[3,'神兵陨铁×2',150,2],[3,'圣品神兵碎片箱×2',150,30],
       [4,'红色法则碎片×40',200,12],[4,'九霞云轿碎片×2',150,20],[4,'圣宝灵髓×5',200,2],
-      [5,'大道法则碎片×40',200,12],[5,'天绝神通自选×1',1200,2],[5,'圣宝灵髓×10',500,4],
+      [5,'大道法则碎片×40',200,12],[5,'金仙神通自选×1',400,2],[5,'圣宝灵髓×10',500,4],
     ],
   },
   shanhai: {
@@ -1106,12 +1128,103 @@ function calculateOptimalReturns(act, totalExch) {
   return returns;
 }
 
+function getManualTreasureInfo(act) {
+  const cfg = DATA[act];
+  const ts = state.treasureExch[act] || {};
+  let returns = 0, spent = 0;
+  let hasManual = false;
+
+  for (let layer = 1; layer <= 5; layer++) {
+    const items = cfg.treasure.filter(t => t[0] === layer);
+    items.forEach((item, idx) => {
+      const key = `${layer}-${idx}`;
+      const qty = ts[key] || 0;
+      if (qty > 0) hasManual = true;
+      returns += LAYER_RET[layer] * qty;
+      spent += item[2] * qty;
+    });
+  }
+
+  return { returns, spent, hasManual };
+}
+
 function getMaxCountWithReturns(act, stock, totalExch) {
   const cfg = DATA[act];
   const tasks = cfg.tasks;
   const cost = cfg.costPerChallenge;
   const baseExch = totalExch || 0;
 
+  // 联动宝库兑换表的手动选择
+  const manual = getManualTreasureInfo(act);
+
+  if (manual.hasManual) {
+    const manualReturns = manual.returns;
+    const manualSpent = manual.spent;
+
+    // 不含宝库返还的初始可达
+    let s0 = stock;
+    let initialCount = 0;
+    for (let i = 0; i < tasks.length; i++) {
+      const prevTaskCount = i > 0 ? tasks[i-1][1] : 0;
+      const thisCount = tasks[i][1];
+      const need = (thisCount - prevTaskCount) * cost;
+      if (s0 >= need) {
+        s0 -= need;
+        s0 += tasks[i][2];
+        initialCount = thisCount;
+      } else {
+        const partial = Math.floor(s0 / cost);
+        initialCount = prevTaskCount + partial;
+        break;
+      }
+    }
+
+    // 含宝库返还的可达
+    const effectiveStock = stock + manualReturns;
+    let s = effectiveStock;
+    let count = 0;
+    for (let i = 0; i < tasks.length; i++) {
+      const prevTaskCount = i > 0 ? tasks[i-1][1] : 0;
+      const thisCount = tasks[i][1];
+      const need = (thisCount - prevTaskCount) * cost;
+      if (s >= need) {
+        s -= need;
+        s += tasks[i][2];
+        count = thisCount;
+      } else {
+        const partial = Math.floor(s / cost);
+        count = prevTaskCount + partial;
+        s -= partial * cost;
+        break;
+      }
+    }
+
+    // Snap down to nearest task node
+    let snappedCount = 0;
+    for (let i = 0; i < tasks.length; i++) {
+      if (tasks[i][1] <= count) snappedCount = tasks[i][1];
+      else break;
+    }
+    if (snappedCount === 0 && count > 0) snappedCount = count;
+
+    const snappedInfo = getNetConsumption(act, snappedCount);
+    const snappedExch = baseExch + snappedInfo.totalExch;
+    const snappedRemaining = stock + manualReturns - snappedInfo.net;
+
+    return {
+      count: snappedCount,
+      rawCount: count,
+      info: snappedInfo,
+      remaining: Math.max(0, snappedRemaining),
+      treasureReturns: manualReturns,
+      totalExch: Math.max(0, snappedExch - manualSpent),
+      initialCount: initialCount,
+      manualTreasureSpent: manualSpent,
+      hasManualTreasure: true
+    };
+  }
+
+  // 无手动选择时，使用最优策略（原逻辑）
   let prevCount = -1;
   let bestReturns = 0;
   let bestCount = 0;
@@ -1392,21 +1505,28 @@ let state = {
   mode: localStorage.getItem('cycleMode') || 'auto',
   manualAct: localStorage.getItem('manualAct') || 'pomu',
   manualActStartDate: localStorage.getItem('manualActStartDate') || '',
-  stock: { pomu: 140, jsh: 110, shanhai: 0 },
-  exchStock: { pomu: 0, jsh: 0, shanhai: 0 },
-  assocCollected: { pomu: false, jsh: false, shanhai: false }, // legacy, unused
+  stock: JSON.parse(localStorage.getItem('stock') || '{"pomu":140,"jsh":110,"shanhai":0}'),
+  exchStock: JSON.parse(localStorage.getItem('exchStock') || '{"pomu":0,"jsh":0,"shanhai":0}'),
+  assocCollected: { pomu: false, jsh: false, shanhai: false },
   assocCount: { pomu: 1, jsh: 1, shanhai: 1 },
-  targetMode: { pomu: 'round', jsh: 'round', shanhai: 'round' }, // 'round' or 'count'
-  targetRound: { pomu: 3, jsh: 7, shanhai: 7 },
-  targetCount: { pomu: 0, jsh: 0, shanhai: 0 },
-  packSelections: {
-    pomu: [7,14,0,0,0,0,0,0,0], // default: free only
-    jsh: [7,14,0,0,0,0,0,0,0],
-    shanhai: [7,14,0,0,0,0,0,0,0],
-  },
-  reverseExch: { pomu: 3400, jsh: 3400, shanhai: 3400 },
-  treasureExch: { pomu: {}, jsh: {}, shanhai: {} }, // {itemKey: qty} for interactive exchange planning
+  targetMode: JSON.parse(localStorage.getItem('targetMode') || '{"pomu":"round","jsh":"round","shanhai":"round"}'),
+  targetRound: JSON.parse(localStorage.getItem('targetRound') || '{"pomu":3,"jsh":7,"shanhai":7}'),
+  targetCount: JSON.parse(localStorage.getItem('targetCount') || '{"pomu":0,"jsh":0,"shanhai":0}'),
+  packSelections: JSON.parse(localStorage.getItem('packSelections') || '{"pomu":[7,14,0,0,0,0,0,0,0],"jsh":[7,14,0,0,0,0,0,0,0],"shanhai":[7,14,0,0,0,0,0,0,0]}'),
+  reverseExch: JSON.parse(localStorage.getItem('reverseExch') || '{"pomu":3400,"jsh":3400,"shanhai":3400}'),
+  treasureExch: JSON.parse(localStorage.getItem('treasureExch') || '{"pomu":{},"jsh":{},"shanhai":{}}'),
 };
+
+function saveState() {
+  localStorage.setItem('stock', JSON.stringify(state.stock));
+  localStorage.setItem('exchStock', JSON.stringify(state.exchStock));
+  localStorage.setItem('targetMode', JSON.stringify(state.targetMode));
+  localStorage.setItem('targetRound', JSON.stringify(state.targetRound));
+  localStorage.setItem('targetCount', JSON.stringify(state.targetCount));
+  localStorage.setItem('packSelections', JSON.stringify(state.packSelections));
+  localStorage.setItem('reverseExch', JSON.stringify(state.reverseExch));
+  localStorage.setItem('treasureExch', JSON.stringify(state.treasureExch));
+}
 
 // ═══════════════════════════════════════════════
 // RENDER
@@ -1491,27 +1611,27 @@ function render() {
     </div>
 
     <!-- Row 2: Merged Analysis (Current Period + Target) -->
-    <div class="card" style="margin-bottom:16px;">
-      <div class="card-title"><span class="step-badge">3</span>综合分析（当期可达 + 目标规划）<span class="card-hint">自动计算，无需操作</span></div>
-      <div id="merged-analysis">${renderMergedAnalysis(act)}</div>
+    <div class="card collapsible-card" id="card3" style="margin-bottom:16px;">
+      <div class="card-title" onclick="document.getElementById('card3').classList.toggle('collapsed')"><span class="step-badge">3</span>综合分析（当期可达 + 目标规划）<span class="card-hint">自动计算，无需操作</span><span class="collapse-arrow">▾</span></div>
+      <div class="collapsible-body"><div id="merged-analysis">${renderMergedAnalysis(act)}</div></div>
     </div>
 
     <!-- Row 3: Pack Selection (full width) -->
-    <div class="card" style="margin-bottom:16px;">
-      <div class="card-title"><span class="step-badge">4</span>礼包选择（勾选并填购买次数）<span class="card-hint">免费+绑购已自动计入，仅勾选付费礼包</span></div>
-      ${renderPackList(act)}
+    <div class="card collapsible-card" id="card4" style="margin-bottom:16px;">
+      <div class="card-title" onclick="document.getElementById('card4').classList.toggle('collapsed')"><span class="step-badge">4</span>礼包选择（勾选并填购买次数）<span class="card-hint">免费+绑购已自动计入，仅勾选付费礼包</span><span class="collapse-arrow">▾</span></div>
+      <div class="collapsible-body">${renderPackList(act)}</div>
     </div>
 
     <!-- Row 4: Reverse Calculator + Round Reference (merged) -->
-    <div class="card" style="margin-bottom:16px;">
-      <div class="card-title"><span class="step-badge">5</span>挑战轮次参考表<span class="card-hint">输入${e}反推挑战次数 | 📍标记当前最大可达节点</span></div>
-      <div id="reverse-calc">${renderReverseCalc(act)}</div>
+    <div class="card collapsible-card" id="card5" style="margin-bottom:16px;">
+      <div class="card-title" onclick="document.getElementById('card5').classList.toggle('collapsed')"><span class="step-badge">5</span>挑战轮次参考表<span class="card-hint">输入${e}反推挑战次数 | 📍标记当前最大可达节点</span><span class="collapse-arrow">▾</span></div>
+      <div class="collapsible-body"><div id="reverse-calc">${renderReverseCalc(act)}</div></div>
     </div>
 
     <!-- Row 5: Treasure Exchange Planner (full width, interactive) -->
-    <div class="card" style="margin-bottom:16px;">
-      <div class="card-title"><span class="step-badge">6</span>宝库兑换规划（根据当前资源实时计算）<span class="card-hint">填兑换次数，实时查看资源</span></div>
-      <div id="treasure-exchange">${renderTreasureTable(act)}</div>
+    <div class="card collapsible-card" id="card6" style="margin-bottom:16px;">
+      <div class="card-title" onclick="document.getElementById('card6').classList.toggle('collapsed')"><span class="step-badge">6</span>宝库兑换规划（根据当前资源实时计算）<span class="card-hint">填兑换次数，实时查看资源</span><span class="collapse-arrow">▾</span></div>
+      <div class="collapsible-body"><div id="treasure-exchange">${renderTreasureTable(act)}</div></div>
     </div>
   `;
   
@@ -1943,8 +2063,12 @@ function renderTreasureTable(act) {
   const maxCount = computeMaxCount(act);
   const targetReachable = maxCount >= avail.targetCount;
   const realEarnable = avail.stock + avail.fromPacks + getNetConsumption(act, maxCount).totalExch;
+  const currentMaxNet = getNetConsumption(act, maxCount);
+  const currentTotalExch = avail.stock + avail.fromPacks + currentMaxNet.totalExch;
+  const currentRemaining = currentTotalExch - totalPlanned;
 
   return `
+    <div style="margin-bottom:6px;font-size:13px;color:var(--accent);font-weight:700;">📋 规划（按目标${avail.targetCount}次）</div>
     <div class="grid-4" style="margin-bottom:14px;">
       <div class="kpi blue">
         <div class="kpi-label">礼包${e}</div>
@@ -1956,7 +2080,7 @@ function renderTreasureTable(act) {
         <div class="kpi-value" style="font-size:18px;">+${avail.fromTarget}</div>
         <div class="kpi-unit">${targetReachable
           ? '挑战+通关'
-          : `⚠ 当前最多${maxCount}次，实得约+${realEarnable}`}</div>
+          : `⚠ 最多${maxCount}次`}</div>
       </div>
       <div class="kpi orange">
         <div class="kpi-label">已计划消耗</div>
@@ -1969,16 +2093,44 @@ function renderTreasureTable(act) {
         <div class="kpi-unit">${remaining >= 0 ? '✓ 充足' : '✗ 不足'}</div>
       </div>
     </div>
+    ${!targetReachable ? `
+    <div style="margin-bottom:6px;font-size:13px;color:var(--orange);font-weight:700;">⚡ 当前实际（最多${maxCount}次）</div>
+    <div class="grid-4" style="margin-bottom:14px;opacity:0.95;">
+      <div class="kpi blue">
+        <div class="kpi-label">礼包${e}</div>
+        <div class="kpi-value" style="font-size:18px;">${avail.fromPacks}</div>
+        <div class="kpi-unit">礼包获得</div>
+      </div>
+      <div class="kpi orange">
+        <div class="kpi-label">实际可获${e}</div>
+        <div class="kpi-value" style="font-size:18px;">+${currentMaxNet.totalExch}</div>
+        <div class="kpi-unit">挑战${maxCount}次</div>
+      </div>
+      <div class="kpi orange">
+        <div class="kpi-label">已计划消耗</div>
+        <div class="kpi-value" style="font-size:18px;">${totalPlanned}</div>
+        <div class="kpi-unit">兑换${e} | 返还+${totalReturn}${c}</div>
+      </div>
+      <div class="kpi ${currentRemaining >= 0 ? 'green' : 'red'}">
+        <div class="kpi-label">兑换后剩余</div>
+        <div class="kpi-value" style="font-size:18px;">${currentRemaining}</div>
+        <div class="kpi-unit">${currentRemaining >= 0 ? '✓ 充足' : '✗ 不足'}</div>
+      </div>
+    </div>
+    <div style="margin-bottom:10px;padding:8px 12px;border-radius:8px;background:rgba(255,165,0,0.1);border:1px solid rgba(255,165,0,0.3);font-size:12px;color:var(--orange);">⚠ 当前资源最多完成${maxCount}次，实际可赚精魄约${currentMaxNet.totalExch}（未达标按此规划）</div>
+    ` : ''}
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:10px;">
       <div style="display:flex;gap:8px;align-items:center;">
         <button class="treasure-btn secondary" onclick="clearTreasure()">清空</button>
       </div>
-      <div style="font-size:13px;color:var(--text-dim);">
-        可用${e}: <strong style="color:var(--accent);font-size:16px;">${avail.total}</strong>（按目标${avail.targetCount}次计）
+      <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-size:13px;color:var(--text-dim);">
+        <span>可用${e}</span>
+        <strong style="color:var(--accent);font-size:16px;">${avail.total}</strong>
+        <span style="font-size:11px;color:var(--text-muted);">（目标${avail.targetCount}次）</span>
+        <span style="color:var(--text-muted);">→</span>
         ${remaining >= 0
-          ? ` → 消耗 <strong style="color:var(--orange);">${totalPlanned}</strong> → 剩余 <strong style="color:var(--green);">${remaining}</strong> +返还${totalReturn}${c}`
-          : ` → 需 <strong style="color:var(--red);">${totalPlanned}</strong> → 缺口 <strong style="color:var(--red);">${-remaining}</strong>`}
-        ${!targetReachable ? `<br><span style="font-size:11px;color:var(--orange);">※ 当前资源最多完成${maxCount}次，实际可赚精魄约${realEarnable}（未达标按此规划）</span>` : ''}
+          ? `<span>消耗</span><strong style="color:var(--orange);">${totalPlanned}</strong><span style="color:var(--text-muted);">→</span><span>剩余</span><strong style="color:var(--green);">${remaining}</strong><span style="color:var(--green);">+返还${totalReturn}${c}</span>`
+          : `<span>需</span><strong style="color:var(--red);">${totalPlanned}</strong><span style="color:var(--text-muted);">→</span><span>缺口</span><strong style="color:var(--red);">${-remaining}</strong>`}
       </div>
     </div>
     <div class="table-wrap" style="max-height:450px;overflow-y:auto;">
@@ -2042,6 +2194,9 @@ function renderMergedAnalysis(act) {
   const exchFromChallenges = netInfo.totalExch;
   const totalExchEarned = maxResult.totalExch || (totalExch + exchFromChallenges);
   const nodeInfo = getTaskNodeInfo(act, maxCount);
+  const manualInfo = maxResult.hasManualTreasure ? getManualTreasureInfo(act) : null;
+  const treasureSpent = manualInfo ? manualInfo.spent : 0;
+  const exchInsufficient = manualInfo && (totalExch + exchFromChallenges < manualInfo.spent);
   
   // === Target calculation ===
   let targetCount;
@@ -2051,8 +2206,10 @@ function renderMergedAnalysis(act) {
   } else {
     targetCount = state.targetCount[act] || 100;
   }
-  const targetNet = getNetConsumption(act, targetCount);
   const canReachTarget = maxResult.rawCount >= targetCount;
+  // 达到目标用targetNet，达不到用实际可达的maxCount算
+  const effectiveCount = canReachTarget ? targetCount : maxCount;
+  const targetNet = getNetConsumption(act, effectiveCount);
   // 需自备数量：完成目标实际要准备的道具（过程返还已如实抵扣），与你的库存直接对比
   const neededStock = findNeededStock(act, totalExch, targetCount);
   const deficit = canReachTarget ? 0 : (neededStock < 0 ? -1 : neededStock - totalCons);
@@ -2149,7 +2306,10 @@ function renderMergedAnalysis(act) {
             ${packCons > 0 ? `<tr><td>付费礼包</td><td>+${packCons}</td><td>+${packExch}</td></tr>` : ''}
             <tr class="highlight"><td><strong>当期可用</strong></td><td><strong style="color:var(--accent)">${totalCons}</strong></td><td><strong style="color:var(--accent)">${totalExch}</strong></td></tr>
             <tr class="highlight"><td><strong>挑战${maxCount}次</strong></td><td><strong style="color:var(--red)">-${netInfo.net}</strong></td><td><strong style="color:var(--green)">+${exchFromChallenges}</strong></td></tr>
-            <tr><td>当期返还${c}<br><span style="font-size:11px;color:var(--text-muted);">节点返还${netInfo.consRet}＋宝库返还${treasureReturns}</span></td><td><strong style="color:var(--green)">+${netInfo.consRet + treasureReturns}</strong></td><td>—</td></tr>
+            <tr><td>节点返还${c}</td><td><strong style="color:var(--green)">+${netInfo.consRet}</strong></td><td>—</td></tr>
+            ${manualInfo ? `<tr><td>宝库返还${c}<br><span style="font-size:11px;color:var(--text-muted);">按兑换明细</span></td><td><strong style="color:var(--green)">+${treasureReturns}</strong></td><td><span style="color:var(--orange)">-${treasureSpent}</span></td></tr>` : ''}
+            ${exchInsufficient ? `<tr><td colspan="3" style="color:var(--red);font-size:12px;">⚠ 原石精魄不足：兑换计划需${manualInfo.spent}，当前仅有${totalExch + exchFromChallenges}</td></tr>` : ''}
+            <tr class="highlight"><td><strong>最多可抽取</strong></td><td><strong style="color:var(--accent)">${maxResult.rawCount}次</strong></td><td>—</td></tr>
             <tr class="highlight"><td><strong>剩余(保留至下期)</strong></td><td><strong style="color:${remaining > 0 ? 'var(--green)' : 'var(--text-muted)'}">${remaining}</strong></td><td><strong style="color:var(--green)">${totalExchEarned}</strong></td></tr>
             <tr><td>下一节点</td><td colspan="2" style="text-align:left;">${nodeInfo.nextDesc} ${nodeInfo.toNext > 0 ? `(还差${nodeInfo.toNext}次=${nodeInfo.toNext * cost}${c})` : ''}</td></tr>
             <tr class="highlight"><td><strong>总预算</strong></td><td colspan="2"><strong style="color:var(--orange)">${packCost}元</strong></td></tr>
@@ -2169,14 +2329,16 @@ function renderMergedAnalysis(act) {
             <tr class="highlight"><td><strong>目标挑战</strong></td><td><strong>${targetCount}次 · 第${targetNet.round}/7轮</strong></td></tr>
             <tr><td>你当前可用${c}</td><td><strong style="color:var(--accent)">${totalCons}</strong></td></tr>
             ${neededStock < 0 ? `<tr class="highlight"><td>完成需要</td><td><strong style="color:var(--red)">目标超出全部轮次，无法完成</strong></td></tr>` : `
-            <tr><td>当期返还${c}<br><span style="font-size:11px;color:var(--text-muted);">节点返还${netInfo.consRet}＋宝库返还${treasureReturns}</span></td><td><strong style="color:var(--green)">+${netInfo.consRet + treasureReturns}</strong></td></tr>
+            <tr><td>节点返还${c}</td><td><strong style="color:var(--green)">+${targetNet.consRet}</strong></td></tr>
+            ${manualInfo ? `<tr><td>宝库返还${c}<br><span style="font-size:11px;color:var(--text-muted);">按兑换明细</span></td><td><strong style="color:var(--green)">+${treasureReturns}</strong></td></tr>` : ''}
             <tr><td>完成${targetCount}次需自备${c}</td><td><strong>${neededStock}</strong></td></tr>
             ${canReachTarget
               ? `<tr class="highlight"><td>当期结果</td><td><strong style="color:var(--green)">✓ 足够，当期即可完成${targetCount}次</strong></td></tr>`
               : `<tr class="highlight"><td>当期结果</td><td><strong style="color:var(--red)">差${deficit}${c}（当期最多${maxResult.rawCount}次）</strong></td></tr>`}
-            <tr><td>完成目标获得${e}</td><td style="color:var(--green)">+${targetNet.totalExch}</td></tr>
+            <tr><td>${canReachTarget ? '完成目标获得' : '实际可获'}${e}</td><td style="color:var(--green)">+${targetNet.totalExch}</td></tr>
             <tr><td>免费+绑购礼包${e}</td><td style="color:var(--green)">+${freeExch + boundExch}</td></tr>
-            <tr class="highlight"><td><strong>合计${e}</strong></td><td><strong style="color:var(--green)">+${totalExch + targetNet.totalExch}</strong></td></tr>
+            ${treasureSpent > 0 ? `<tr><td>兑换消耗${e}</td><td style="color:var(--orange)">-${treasureSpent}</td></tr>` : ''}
+            <tr class="highlight"><td><strong>合计${e}</strong></td><td><strong style="color:var(--green)">+${totalExch + targetNet.totalExch - treasureSpent}</strong></td></tr>
             <tr class="highlight"><td><strong>预计完成</strong></td><td>${canReachTarget
                 ? '<strong style="color:var(--green)">当期（本期活动内）</strong>'
                 : (forecastDate
@@ -2198,6 +2360,7 @@ function renderMergedAnalysis(act) {
 // ═══════════════════════════════════════════════
 function setMode(mode) {
   state.targetMode[currentAct] = mode;
+  saveState();
   render();
 }
 
@@ -2209,12 +2372,14 @@ function togglePack(idx) {
     const cfg = DATA[currentAct];
     sel[idx] = cfg.packs[idx].limit;
   }
+  saveState();
   render();
 }
 
 function setPackQty(idx, val) {
   const v = Math.max(0, Math.min(parseInt(val) || 0, DATA[currentAct].packs[idx].limit));
   state.packSelections[currentAct][idx] = v;
+  saveState();
   render();
 }
 
@@ -2226,7 +2391,21 @@ function setTreasureQty(key, val) {
   } else {
     delete state.treasureExch[currentAct][key];
   }
+  saveState();
   updateTreasureSection();
+  updateAnalysisSection();
+}
+
+function updateAnalysisSection() {
+  const ae = document.getElementById('merged-analysis');
+  if (ae) {
+    ae.innerHTML = renderMergedAnalysis(currentAct);
+    ae.querySelectorAll('input[type="number"]').forEach(el => {
+      el.addEventListener('keydown', e => {
+        if (e.key === 'Enter') e.target.blur();
+      });
+    });
+  }
 }
 
 function updateTreasureSection() {
@@ -2252,19 +2431,22 @@ function updateTreasureSection() {
 
 function clearTreasure() {
   state.treasureExch[currentAct] = {};
+  saveState();
   updateTreasureSection();
+  updateAnalysisSection();
 }
 
 // Smart render: only update result sections, never touch input fields
 function updateResults() {
   const act = currentAct;
-  
+  saveState();
+
   const ma = document.getElementById('merged-analysis');
   if (ma) ma.innerHTML = renderMergedAnalysis(act);
-  
+
   const rr = document.getElementById('reverse-results');
   if (rr) rr.innerHTML = renderReverseResults(act);
-  
+
   updateTreasureSection();
 }
 
@@ -2288,11 +2470,18 @@ function attachListeners() {
   bindInput('stock', 'stock', v => parseInt(v) || 0, true);
   bindInput('targetRound', 'targetRound', v => Math.max(1, Math.min(7, parseInt(v) || 1)), true);
   bindInput('targetCount', 'targetCount', v => Math.max(1, parseInt(v) || 1), true);
+
+  // Save state on stock change
+  const stockEl = document.getElementById('stock');
+  if (stockEl) {
+    stockEl.addEventListener('change', () => saveState());
+  }
   // Reverse calc: real-time update without losing input focus
   const revEl = document.getElementById('reverseExch');
   if (revEl) {
     revEl.addEventListener('input', e => {
       state.reverseExch[act] = parseInt(e.target.value) || 0;
+      saveState();
       const rr = document.getElementById('reverse-results');
       if (rr) rr.innerHTML = renderReverseResults(act);
     });
