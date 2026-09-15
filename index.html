@@ -104,33 +104,43 @@ body {
   .grid-3, .grid-4, .grid-5 { grid-template-columns: 1fr 1fr; }
 }
 @media (max-width: 640px) {
-  .app { padding: 8px; }
-  .header { padding: 16px; }
-  .header h1 { font-size: 18px; }
-  .card { padding: 14px; }
-  .grid, .grid-2, .grid-3, .grid-4, .grid-5 { grid-template-columns: 1fr; gap: 8px; }
+  .app { padding: 6px; }
+  .header { padding: 14px; gap: 8px; }
+  .header h1 { font-size: 17px; }
+  .card { padding: 12px; }
+  .grid, .grid-2 { grid-template-columns: 1fr; gap: 10px; }
+  .grid-3, .grid-4, .grid-5 { grid-template-columns: repeat(2, 1fr); gap: 8px; }
   .pack-list { grid-template-columns: repeat(2, 1fr); gap: 6px; }
   .pack-item { padding: 8px 6px; }
   .pack-item .pack-name { font-size: 11px; }
   .pack-item .pack-price { font-size: 10px; }
+  .kpi { padding: 10px 8px; }
   .kpi-value { font-size: 16px !important; }
   .kpi-label { font-size: 11px; }
   .kpi-unit { font-size: 10px; }
-  table { font-size: 11px; }
-  th, td { padding: 6px 8px; }
-  .card-title { font-size: 13px; flex-wrap: wrap; gap: 4px; }
+  .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  table { font-size: 11px; min-width: 280px; }
+  th, td { padding: 5px 6px; }
+  .card-title { font-size: 12px; flex-wrap: wrap; gap: 4px; padding-bottom: 8px; }
   .card-hint { font-size: 10px; }
   .step-badge { width: 20px; height: 20px; font-size: 11px; }
   .input-group label { font-size: 11px; }
   .input-group input { font-size: 14px; padding: 8px 10px; }
+  .round-cell { padding: 8px 4px; }
+  .round-cell .rc-count { font-size: 14px; }
+  .round-cell .rc-label, .round-cell .rc-net { font-size: 10px; }
+  .guide-content { padding: 10px 12px; }
+  .tabs { flex-wrap: wrap; gap: 4px; padding: 3px; }
+  .tab { padding: 6px 14px; font-size: 12px; flex: 1; text-align: center; }
 }
 @media (max-width: 380px) {
   .pack-list { grid-template-columns: 1fr; }
-  .header { padding: 12px; }
-  .header h1 { font-size: 16px; }
+  .grid-3, .grid-4, .grid-5 { grid-template-columns: 1fr; }
+  .header { padding: 10px; }
+  .header h1 { font-size: 15px; }
   .card { padding: 10px; }
   table { font-size: 10px; }
-  th, td { padding: 4px 6px; }
+  th, td { padding: 4px 4px; }
 }
 
 /* Card */
@@ -387,7 +397,80 @@ body {
 .pack-qty:focus { outline: none; border-color: var(--accent); }
 
 /* Table */
-.table-wrap { overflow-x: auto; border-radius: 8px; border: 1px solid var(--border); }
+.table-wrap { overflow-x: auto; border-radius: 8px; border: 1px solid var(--border); -webkit-overflow-scrolling: touch; }
+
+/* Treasure Card Layout */
+.treasure-layers { display: flex; flex-direction: column; gap: 14px; }
+.treasure-layer {
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  overflow: hidden;
+}
+.treasure-layer-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.treasure-layer-header .lh-left { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.treasure-layer-header .lh-right { font-size: 12px; }
+.treasure-cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  padding: 8px 10px 12px;
+}
+.t-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: center;
+  text-align: center;
+  transition: border-color .2s, background .2s;
+}
+.t-card.selected { border-color: var(--green); background: var(--green-dim); }
+.t-card.locked { opacity: .4; }
+.t-card .tc-name { font-size: 12px; font-weight: 600; color: var(--text); line-height: 1.4; }
+.t-card .tc-price { font-size: 11px; color: var(--text-dim); }
+.t-card .tc-qty-wrap { display: flex; align-items: center; gap: 4px; margin-top: 2px; }
+.t-card .tc-qty-btn {
+  width: 26px; height: 26px; border-radius: 6px;
+  border: 1px solid var(--border); background: var(--card-hover);
+  color: var(--text); font-size: 14px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all .15s; user-select: none;
+}
+.t-card .tc-qty-btn:hover { border-color: var(--accent); color: var(--accent); }
+.t-card .tc-qty-input {
+  width: 40px; text-align: center;
+  background: var(--bg); border: 1px solid var(--border);
+  border-radius: 6px; padding: 4px 2px;
+  color: var(--text); font-size: 14px; font-weight: 700;
+}
+.t-card .tc-qty-input:focus { outline: none; border-color: var(--accent); }
+.t-card .tc-return { font-size: 11px; color: var(--green); }
+.t-card .tc-status { font-size: 11px; }
+@media (max-width: 640px) {
+  .treasure-cards { grid-template-columns: repeat(3, 1fr); gap: 6px; }
+  .t-card { padding: 8px 4px; gap: 4px; }
+  .t-card .tc-name { font-size: 10px; line-height: 1.3; }
+  .t-card .tc-price { font-size: 9px; }
+  .t-card .tc-qty-btn { width: 22px; height: 22px; font-size: 12px; }
+  .t-card .tc-qty-input { width: 32px; font-size: 12px; padding: 3px 1px; }
+  .t-card .tc-return { font-size: 9px; }
+  .treasure-layer-header { padding: 8px 10px; }
+}
+@media (max-width: 380px) {
+  .treasure-cards { grid-template-columns: repeat(3, 1fr); gap: 4px; }
+  .t-card { padding: 6px 3px; }
+  .t-card .tc-name { font-size: 9px; }
+}
 table { width: 100%; border-collapse: collapse; font-size: 12px; }
 th {
   background: linear-gradient(180deg, var(--card-hover), var(--card));
@@ -2096,6 +2179,76 @@ function renderTreasureTable(act) {
   const currentTotalExch = avail.stock + avail.fromPacks + currentMaxNet.totalExch;
   const currentRemaining = currentTotalExch - totalPlanned;
 
+  // Build card layers
+  let layersHTML = '';
+  for (let layer = 1; layer <= 5; layer++) {
+    const items = cfg.treasure.filter(t => t[0] === layer);
+    const unlock = LAYER_NEED[layer];
+    const ret = LAYER_RET[layer];
+    const prevCum = cumBefore[layer];
+    const layerUnlocked = prevCum >= unlock;
+    const layerProgress = unlock > 0 ? Math.min(100, (prevCum / unlock * 100)) : 100;
+    const layerDeficit = layerUnlocked ? 0 : unlock - prevCum;
+
+    const layerColors = ['#4e9af1','#e67e22','#9b59b6','#e74c3c','#2ecc71'];
+    const lc = layerColors[layer - 1];
+
+    let cardsHTML = '';
+    items.forEach((item, idx) => {
+      const key = `${layer}-${idx}`;
+      const qty = ts[key] || 0;
+      const consumption = item[2] * qty;
+      const retAmt = ret * qty;
+
+      let statusHtml;
+      if (qty > 0) {
+        if (!layerUnlocked) statusHtml = '🔒';
+        else if (remaining < 0) statusHtml = '✗';
+        else statusHtml = '✓';
+      } else {
+        if (!layerUnlocked) statusHtml = '🔒';
+        else statusHtml = '—';
+      }
+
+      cardsHTML += `
+        <div class="t-card ${qty > 0 ? 'selected' : ''} ${!layerUnlocked ? 'locked' : ''}">
+          <div class="tc-name">${item[1]}</div>
+          <div class="tc-price">${item[2]}${e}/限${item[3]}</div>
+          <div class="tc-qty-wrap">
+            <button class="tc-qty-btn" onclick="event.stopPropagation();adjustTreasureQty('${key}', -1, ${item[3]})">−</button>
+            <input type="number" class="tc-qty-input" data-key="${key}" data-act="${act}"
+                   value="${qty}" min="0" max="${item[3]}"
+                   onclick="event.stopPropagation()"
+                   onchange="setTreasureQty('${key}', this.value)"
+                   style="width:40px;text-align:center;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:4px 2px;color:var(--text);font-size:14px;font-weight:700;">
+            <button class="tc-qty-btn" onclick="event.stopPropagation();adjustTreasureQty('${key}', 1, ${item[3]})">+</button>
+          </div>
+          ${qty > 0 ? `<div class="tc-return">返还+${retAmt}${c}</div><div class="tc-status" style="color:${qty > 0 && layerUnlocked && remaining >= 0 ? 'var(--green)' : 'var(--red)'}">${statusHtml}</div>` : ''}
+        </div>
+      `;
+    });
+
+    layersHTML += `
+      <div class="treasure-layer" style="border-color:${layerUnlocked ? 'var(--border-light)' : 'var(--border)'};">
+        <div class="treasure-layer-header" style="background:rgba(${layerUnlocked ? '46,204,113' : '90,94,110'},.08);">
+          <div class="lh-left">
+            <span style="background:${lc};color:#fff;font-size:11px;font-weight:700;padding:2px 8px;border-radius:4px;">第${layer}层</span>
+            <span style="font-size:11px;color:var(--text-muted);">解锁: 累计消耗${unlock}${e}</span>
+            <span style="font-size:11px;color:var(--green);">返还: ${ret}${c}/次</span>
+          </div>
+          <div class="lh-right">
+            ${layerUnlocked
+              ? '<span style="color:var(--green);">✓ 已解锁</span>'
+              : `<span style="color:var(--red);">🔒 差${layerDeficit}${e}</span>
+                 <div class="value-bar" style="width:80px;display:inline-block;vertical-align:middle;margin-left:4px;"><div class="value-bar-fill" style="width:${layerProgress}%;background:var(--orange);"></div></div>
+                 <span style="font-size:10px;color:var(--text-muted);margin-left:2px;">${prevCum}/${unlock}</span>`}
+          </div>
+        </div>
+        <div class="treasure-cards">${cardsHTML}</div>
+      </div>
+    `;
+  }
+
   return `
     <div style="margin-bottom:6px;font-size:13px;color:var(--accent);font-weight:700;">📋 规划（按目标${avail.targetCount}次）</div>
     <div class="grid-4" style="margin-bottom:14px;">
@@ -2162,20 +2315,7 @@ function renderTreasureTable(act) {
           : `<span>需</span><strong style="color:var(--red);">${totalPlanned}</strong><span style="color:var(--text-muted);">→</span><span>缺口</span><strong style="color:var(--red);">${-remaining}</strong>`}
       </div>
     </div>
-    <div class="table-wrap" style="max-height:450px;overflow-y:auto;">
-      <table>
-        <thead>
-          <tr>
-            <th>道具 (单价/限购)</th>
-            <th style="text-align:center;">兑换次数</th>
-            <th>消耗${e}</th>
-            <th>返还${c}</th>
-            <th style="text-align:center;">状态</th>
-          </tr>
-        </thead>
-        <tbody>${rows}</tbody>
-      </table>
-    </div>
+    <div class="treasure-layers">${layersHTML}</div>
   `;
 }
 
@@ -2417,6 +2557,20 @@ function setTreasureQty(key, val) {
   if (!state.treasureExch[currentAct]) state.treasureExch[currentAct] = {};
   if (v > 0) {
     state.treasureExch[currentAct][key] = v;
+  } else {
+    delete state.treasureExch[currentAct][key];
+  }
+  saveState();
+  updateTreasureSection();
+  updateAnalysisSection();
+}
+
+function adjustTreasureQty(key, delta, max) {
+  if (!state.treasureExch[currentAct]) state.treasureExch[currentAct] = {};
+  const cur = state.treasureExch[currentAct][key] || 0;
+  const nv = Math.max(0, Math.min(max, cur + delta));
+  if (nv > 0) {
+    state.treasureExch[currentAct][key] = nv;
   } else {
     delete state.treasureExch[currentAct][key];
   }
