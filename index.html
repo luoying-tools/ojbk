@@ -103,6 +103,35 @@ body {
   .grid { grid-template-columns: 1fr; }
   .grid-3, .grid-4, .grid-5 { grid-template-columns: 1fr 1fr; }
 }
+@media (max-width: 640px) {
+  .app { padding: 8px; }
+  .header { padding: 16px; }
+  .header h1 { font-size: 18px; }
+  .card { padding: 14px; }
+  .grid, .grid-2, .grid-3, .grid-4, .grid-5 { grid-template-columns: 1fr; gap: 8px; }
+  .pack-list { grid-template-columns: repeat(2, 1fr); gap: 6px; }
+  .pack-item { padding: 8px 6px; }
+  .pack-item .pack-name { font-size: 11px; }
+  .pack-item .pack-price { font-size: 10px; }
+  .kpi-value { font-size: 16px !important; }
+  .kpi-label { font-size: 11px; }
+  .kpi-unit { font-size: 10px; }
+  table { font-size: 11px; }
+  th, td { padding: 6px 8px; }
+  .card-title { font-size: 13px; flex-wrap: wrap; gap: 4px; }
+  .card-hint { font-size: 10px; }
+  .step-badge { width: 20px; height: 20px; font-size: 11px; }
+  .input-group label { font-size: 11px; }
+  .input-group input { font-size: 14px; padding: 8px 10px; }
+}
+@media (max-width: 380px) {
+  .pack-list { grid-template-columns: 1fr; }
+  .header { padding: 12px; }
+  .header h1 { font-size: 16px; }
+  .card { padding: 10px; }
+  table { font-size: 10px; }
+  th, td { padding: 4px 6px; }
+}
 
 /* Card */
 .card {
