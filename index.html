@@ -2094,87 +2094,9 @@ function renderTreasureTable(act) {
     cum += layerSpend[layer];
   }
   
-  // Build rows
-  let rows = '';
-  for (let layer = 1; layer <= 5; layer++) {
-    const items = cfg.treasure.filter(t => t[0] === layer);
-    const unlock = LAYER_NEED[layer];
-    const ret = LAYER_RET[layer];
-    const prevCum = cumBefore[layer];
-    const layerUnlocked = prevCum >= unlock;
-    const layerProgress = unlock > 0 ? Math.min(100, (prevCum / unlock * 100)) : 100;
-    const layerDeficit = layerUnlocked ? 0 : unlock - prevCum;
-
-    // Layer header row
-    rows += `
-      <tr class="layer-header" style="background:var(--bg);">
-        <td colspan="5" style="padding:8px 10px;">
-          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
-            <span class="tag tag-layer-${layer}">第${layer}层</span>
-            <span style="font-size:12px;color:var(--text-muted);">解锁: 累计消耗${unlock}${e}</span>
-            <span style="font-size:12px;color:var(--green);">返还: ${ret}${c}/次</span>
-            ${layerUnlocked
-              ? '<span style="font-size:12px;color:var(--green);">✓ 已解锁</span>'
-              : `<span style="font-size:12px;color:var(--red);">🔒 差${layerDeficit}${e}</span>
-                 <div class="value-bar" style="width:80px;"><div class="value-bar-fill" style="width:${layerProgress}%;background:var(--orange);"></div></div>
-                 <span style="font-size:10px;color:var(--text-muted);">${prevCum}/${unlock}</span>`}
-          </div>
-        </td>
-      </tr>
-    `;
-
-    items.forEach((item, idx) => {
-      const key = `${layer}-${idx}`;
-      const qty = ts[key] || 0;
-      const consumption = item[2] * qty;
-      const retAmt = ret * qty;
-      const remaining = avail.total - totalPlanned;
-
-      let statusHtml;
-      if (qty > 0) {
-        if (!layerUnlocked) {
-          statusHtml = `<span class="badge badge-no">🔒</span>`;
-        } else if (remaining < 0) {
-          statusHtml = '<span class="badge badge-no">✗</span>';
-        } else {
-          statusHtml = '<span class="badge badge-ok">✓</span>';
-        }
-      } else {
-        if (!layerUnlocked) {
-          statusHtml = `<span style="color:var(--text-muted);font-size:11px;">🔒</span>`;
-        } else if (remaining < item[2]) {
-          statusHtml = `<span style="color:var(--text-muted);font-size:11px;">—</span>`;
-        } else {
-          statusHtml = '';
-        }
-      }
-
-      const classes = [];
-      if (qty > 0) classes.push('highlight');
-
-      rows += `
-        <tr ${classes.length ? `class="${classes.join(' ')}"` : ''}>
-          <td>${item[1]} <span style="font-size:11px;color:var(--text-muted);">(${item[2]}${e}/限${item[3]})</span></td>
-          <td style="text-align:center;">
-            <input type="number" class="treasure-qty-input" data-key="${key}" data-act="${act}"
-                   value="${qty}" min="0" max="${item[3]}"
-                   onclick="event.stopPropagation()"
-                   onchange="setTreasureQty('${key}', this.value)"
-                   style="width:70px;background:var(--card);border:1px solid var(--border);border-radius:6px;padding:6px 8px;color:var(--text);font-size:14px;text-align:center;font-weight:600;">
-          </td>
-          <td style="color:${consumption>0?'var(--orange)':'var(--text-muted)'};font-weight:${consumption>0?'700':'400'};">${consumption > 0 ? '-' + consumption : '—'}</td>
-          <td style="color:var(--green);">${retAmt > 0 ? '+' + retAmt : '—'}</td>
-          <td style="text-align:center;">${statusHtml}</td>
-        </tr>
-      `;
-    });
-  }
-  
   const remaining = avail.total - totalPlanned;
-  // 目标可达性核对：按当前资源实际能打到的次数，算真实可赚精魄
   const maxCount = computeMaxCount(act);
   const targetReachable = maxCount >= avail.targetCount;
-  const realEarnable = avail.stock + avail.fromPacks + getNetConsumption(act, maxCount).totalExch;
   const currentMaxNet = getNetConsumption(act, maxCount);
   const currentTotalExch = avail.stock + avail.fromPacks + currentMaxNet.totalExch;
   const currentRemaining = currentTotalExch - totalPlanned;
@@ -2275,18 +2197,17 @@ function renderTreasureTable(act) {
         <div class="kpi-unit">${remaining >= 0 ? '✓ 充足' : '✗ 不足'}</div>
       </div>
     </div>
-    ${!targetReachable ? `
     <div style="margin-bottom:6px;font-size:13px;color:var(--orange);font-weight:700;">⚡ 当前实际（最多${maxCount}次）</div>
-    <div class="grid-4" style="margin-bottom:14px;opacity:0.95;">
+    <div class="grid-4" style="margin-bottom:${!targetReachable ? '14px' : '10px'};opacity:0.95;">
       <div class="kpi blue">
         <div class="kpi-label">礼包${e}</div>
         <div class="kpi-value" style="font-size:18px;">${avail.fromPacks}</div>
         <div class="kpi-unit">礼包获得</div>
       </div>
-      <div class="kpi orange">
+      <div class="kpi ${targetReachable ? 'green' : 'orange'}">
         <div class="kpi-label">实际可获${e}</div>
         <div class="kpi-value" style="font-size:18px;">+${currentMaxNet.totalExch}</div>
-        <div class="kpi-unit">挑战${maxCount}次</div>
+        <div class="kpi-unit">挑战${maxCount}次${targetReachable ? ' ✓ 达标' : ''}</div>
       </div>
       <div class="kpi orange">
         <div class="kpi-label">已计划消耗</div>
@@ -2299,8 +2220,7 @@ function renderTreasureTable(act) {
         <div class="kpi-unit">${currentRemaining >= 0 ? '✓ 充足' : '✗ 不足'}</div>
       </div>
     </div>
-    <div style="margin-bottom:10px;padding:8px 12px;border-radius:8px;background:rgba(255,165,0,0.1);border:1px solid rgba(255,165,0,0.3);font-size:12px;color:var(--orange);">⚠ 当前资源最多完成${maxCount}次，实际可赚精魄约${currentMaxNet.totalExch}（未达标按此规划）</div>
-    ` : ''}
+    ${!targetReachable ? `<div style="margin-bottom:10px;padding:8px 12px;border-radius:8px;background:rgba(255,165,0,0.1);border:1px solid rgba(255,165,0,0.3);font-size:12px;color:var(--orange);">⚠ 当前资源最多完成${maxCount}次，实际可赚精魄约${currentMaxNet.totalExch}（未达标按此规划）</div>` : ''}
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:10px;">
       <div style="display:flex;gap:8px;align-items:center;">
         <button class="treasure-btn secondary" onclick="clearTreasure()">清空</button>
@@ -2594,16 +2514,7 @@ function updateAnalysisSection() {
 function updateTreasureSection() {
   const te = document.getElementById('treasure-exchange');
   if (te) {
-    // Save scroll position before re-render
-    const scrollEl = te.querySelector('.table-wrap');
-    const savedScroll = scrollEl ? scrollEl.scrollTop : 0;
-
     te.innerHTML = renderTreasureTable(currentAct);
-
-    // Restore scroll position after re-render
-    const newScrollEl = te.querySelector('.table-wrap');
-    if (newScrollEl) newScrollEl.scrollTop = savedScroll;
-
     te.querySelectorAll('input[type="number"]').forEach(el => {
       el.addEventListener('keydown', e => {
         if (e.key === 'Enter') e.target.blur();
